@@ -25,7 +25,7 @@ Craft CMS 5.0+, Craft Commerce 5.0+, PHP 8.2+.
 
 ```sh
 composer require wmd/craft-omnibus
-php craft plugin/install craft-product-price-history
+php craft plugin/install omnibus
 ```
 
 The plugin records a history row whenever a variant's base price changes, and
@@ -38,7 +38,7 @@ reference day has no rows for that day; if its prices have not changed since,
 assert that once:
 
 ```sh
-php craft craft-product-price-history/anchor/backfill --as-of=2026-09-10
+php craft omnibus/anchor/backfill --as-of=2026-09-10
 ```
 
 `anchor/backfill` without `--as-of` records today's price for variants that
@@ -90,14 +90,14 @@ The original API stays: `getVariantLowestPrice(id, days, fallback)` and
 ## Price list
 
 ```sh
-php craft craft-product-price-history/price-list/publish   # write today's CSV + XML, prune, rebuild the index
-php craft craft-product-price-history/price-list/preview   # print the first rows, write nothing
+php craft omnibus/price-list/publish   # write today's CSV + XML, prune, rebuild the index
+php craft omnibus/price-list/preview   # print the first rows, write nothing
 ```
 
 Run `publish` from cron every day before 08:00 local time:
 
 ```
-0 7 * * * cd /path/to/site && php craft craft-product-price-history/price-list/publish >/dev/null 2>&1
+0 7 * * * cd /path/to/site && php craft omnibus/price-list/publish >/dev/null 2>&1
 ```
 
 Columns, in the order of čl. III: `naziv`, `sifra`, `marka`, `jedinica_mjere`,

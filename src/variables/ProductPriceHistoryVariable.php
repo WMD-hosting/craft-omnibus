@@ -39,7 +39,7 @@ class ProductPriceHistoryVariable
     public function anchorLabel(): string
     {
         return ProductHistory::$plugin->getSettings()->anchorLabel
-            ?: Craft::t('craft-product-price-history', 'Anchor price');
+            ?: Craft::t('omnibus', 'Anchor price');
     }
 
     /** The reference day as configured. */

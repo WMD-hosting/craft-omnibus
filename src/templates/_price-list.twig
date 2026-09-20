@@ -2,17 +2,17 @@
 <html lang="{{ craft.app.language|split('-')|first }}">
 <head>
   <meta charset="utf-8">
-  <title>{{ 'Product price list'|t('craft-product-price-history') }}</title>
+  <title>{{ 'Product price list'|t('omnibus') }}</title>
   <meta name="robots" content="index, follow">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>body{font:16px/1.5 system-ui,sans-serif;max-width:60rem;margin:2rem auto;padding:0 1rem;color:#111}table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:.4rem .6rem;border-bottom:1px solid #ddd}small{color:#666}</style>
 </head>
 <body>
-  <h1>{{ 'Product price list'|t('craft-product-price-history') }}</h1>
-  <p>{{ 'Published under the Decision on publishing price lists of products and services (NN 101/2026). Files stay available for {days} days after publication. The anchor price refers to {date}.'|t('craft-product-price-history', { days: retentionDays, date: anchorDate|date('d.m.Y') }) }}</p>
+  <h1>{{ 'Product price list'|t('omnibus') }}</h1>
+  <p>{{ 'Published under the Decision on publishing price lists of products and services (NN 101/2026). Files stay available for {days} days after publication. The anchor price refers to {date}.'|t('omnibus', { days: retentionDays, date: anchorDate|date('d.m.Y') }) }}</p>
   {% if files|length %}
     <table>
-      <thead><tr><th>{{ 'File'|t('craft-product-price-history') }}</th><th>{{ 'Published'|t('craft-product-price-history') }}</th><th>{{ 'Size'|t('craft-product-price-history') }}</th></tr></thead>
+      <thead><tr><th>{{ 'File'|t('omnibus') }}</th><th>{{ 'Published'|t('omnibus') }}</th><th>{{ 'Size'|t('omnibus') }}</th></tr></thead>
       <tbody>
         {% for f in files %}
           <tr><td><a href="{{ f.url }}">{{ f.name }}</a></td><td>{{ f.date }}</td><td><small>{{ (f.size / 1024)|number_format(1) }} kB</small></td></tr>
@@ -20,7 +20,7 @@
       </tbody>
     </table>
   {% else %}
-    <p>{{ 'The price list has not been published yet.'|t('craft-product-price-history') }}</p>
+    <p>{{ 'The price list has not been published yet.'|t('omnibus') }}</p>
   {% endif %}
 </body>
 </html>

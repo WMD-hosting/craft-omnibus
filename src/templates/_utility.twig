@@ -323,7 +323,7 @@
             formData.append('page', page);
             formData.append('CRAFT_CSRF_TOKEN', '{{ craft.app.request.csrfToken }}');
             
-            fetch('{{ actionUrl("craft-product-price-history/product-price-history/search") }}', {
+            fetch('{{ actionUrl("omnibus/product-price-history/search") }}', {
                 method: 'POST',
                 body: formData
             })

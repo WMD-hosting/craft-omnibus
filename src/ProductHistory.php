@@ -66,7 +66,7 @@ class ProductHistory extends Plugin
      */
     protected function settingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('craft-product-price-history/_settings', [
+        return Craft::$app->getView()->renderTemplate('omnibus/_settings', [
             'settings' => $this->getSettings(),
         ]);
     }
@@ -96,7 +96,7 @@ class ProductHistory extends Plugin
             function(\craft\events\RegisterUrlRulesEvent $event) {
                 $route = trim($this->getSettings()->priceListRoute, '/');
                 if ($route !== '') {
-                    $event->rules[$route] = 'craft-product-price-history/price-list/index';
+                    $event->rules[$route] = 'omnibus/price-list/index';
                 }
             }
         );

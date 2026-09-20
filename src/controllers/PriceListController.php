@@ -34,7 +34,7 @@ class PriceListController extends Controller
             'date' => date('Y-m-d H:i', filemtime($file)),
         ], $files);
 
-        $html = Craft::$app->getView()->renderTemplate('craft-product-price-history/_price-list', [
+        $html = Craft::$app->getView()->renderTemplate('omnibus/_price-list', [
             'files' => $rows,
             'anchorDate' => $settings->anchorDate,
             'retentionDays' => $settings->retentionDays,

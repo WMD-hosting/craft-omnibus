@@ -214,7 +214,7 @@ class PriceListService extends Component
             $when = date('Y-m-d H:i', filemtime($file));
             $items .= "<li><a href=\"{$name}\">{$name}</a> <small>({$when})</small></li>\n";
         }
-        $t = static fn(string $s, array $p = []) => Craft::t('craft-product-price-history', $s, $p);
+        $t = static fn(string $s, array $p = []) => Craft::t('omnibus', $s, $p);
         $lang = explode('-', Craft::$app->language)[0];
         $html = "<!doctype html>\n<html lang=\"{$lang}\"><head><meta charset=\"utf-8\"><title>{$t('Product price list')}</title>"
             . "<meta name=\"robots\" content=\"index,follow\"></head><body>"

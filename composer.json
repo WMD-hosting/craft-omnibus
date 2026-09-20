@@ -34,7 +34,7 @@
         }
     },
     "extra": {
-        "handle": "craft-product-price-history",
+        "handle": "omnibus",
         "name": "Omnibus, Price History and Anchor Price",
         "developer": "WMD",
         "developerUrl": "https://wmd.hr",

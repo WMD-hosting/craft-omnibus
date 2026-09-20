@@ -42,7 +42,7 @@ class ProductPriceUtility extends Utility
         
         $data = $service->getProductPriceHistory($page);
         
-        return Craft::$app->getView()->renderTemplate('craft-product-price-history/_utility.twig', [
+        return Craft::$app->getView()->renderTemplate('omnibus/_utility.twig', [
             'data' => $data,
         ]);
     }

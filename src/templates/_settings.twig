@@ -1,10 +1,10 @@
 {% import '_includes/forms' as forms %}
 
-<h2>{{ 'Anchor price (NN 101/2026)'|t('craft-product-price-history') }}</h2>
+<h2>{{ 'Anchor price (NN 101/2026)'|t('omnibus') }}</h2>
 
 {{ forms.dateField({
-    label: 'Reference day'|t('craft-product-price-history'),
-    instructions: 'The anchor price is the price applicable on this day. The decision sets 10 September 2026.'|t('craft-product-price-history'),
+    label: 'Reference day'|t('omnibus'),
+    instructions: 'The anchor price is the price applicable on this day. The decision sets 10 September 2026.'|t('omnibus'),
     id: 'anchorDate',
     name: 'anchorDate',
     value: settings.anchorDate ? date(settings.anchorDate) : null,
@@ -12,26 +12,26 @@
 }) }}
 
 {{ forms.textField({
-    label: 'Label'|t('craft-product-price-history'),
-    instructions: 'Printed next to the selling price. Leave empty to use the translated default.'|t('craft-product-price-history'),
+    label: 'Label'|t('omnibus'),
+    instructions: 'Printed next to the selling price. Leave empty to use the translated default.'|t('omnibus'),
     id: 'anchorLabel',
-    placeholder: 'Anchor price'|t('craft-product-price-history'),
+    placeholder: 'Anchor price'|t('omnibus'),
     name: 'anchorLabel',
     value: settings.anchorLabel,
     errors: settings.getErrors('anchorLabel'),
 }) }}
 
 {{ forms.lightswitchField({
-    label: 'Products listed after the reference day use their first price'|t('craft-product-price-history'),
-    instructions: 'The anchor then carries the first listing date instead of the reference day.'|t('craft-product-price-history'),
+    label: 'Products listed after the reference day use their first price'|t('omnibus'),
+    instructions: 'The anchor then carries the first listing date instead of the reference day.'|t('omnibus'),
     id: 'anchorFromFirstListing',
     name: 'anchorFromFirstListing',
     on: settings.anchorFromFirstListing,
 }) }}
 
 {{ forms.textField({
-    label: 'Lowest-price window (days)'|t('craft-product-price-history'),
-    instructions: 'Days before a reduction whose lowest price must be shown (Consumer Protection Act, art. 19).'|t('craft-product-price-history'),
+    label: 'Lowest-price window (days)'|t('omnibus'),
+    instructions: 'Days before a reduction whose lowest price must be shown (Consumer Protection Act, art. 19).'|t('omnibus'),
     id: 'lowestPriceDays',
     name: 'lowestPriceDays',
     type: 'number',
@@ -42,59 +42,59 @@
 
 <hr>
 
-<h2>{{ 'Price list files'|t('craft-product-price-history') }}</h2>
+<h2>{{ 'Price list files'|t('omnibus') }}</h2>
 
 {{ forms.lightswitchField({
-    label: 'Publish the daily price list'|t('craft-product-price-history'),
-    instructions: 'Run `craft craft-product-price-history/price-list/publish` from cron every day before 08:00.'|t('craft-product-price-history'),
+    label: 'Publish the daily price list'|t('omnibus'),
+    instructions: 'Run `craft omnibus/price-list/publish` from cron every day before 08:00.'|t('omnibus'),
     id: 'priceListEnabled',
     name: 'priceListEnabled',
     on: settings.priceListEnabled,
 }) }}
 
 {{ forms.textField({
-    label: 'Store type'|t('craft-product-price-history'),
-    instructions: 'Part of the price-list file name (art. VI), e.g. "internetska trgovina".'|t('craft-product-price-history'),
+    label: 'Store type'|t('omnibus'),
+    instructions: 'Part of the price-list file name (art. VI), e.g. "internetska trgovina".'|t('omnibus'),
     id: 'storeType', name: 'storeType', value: settings.storeType, errors: settings.getErrors('storeType'),
 }) }}
 
 {{ forms.textField({
-    label: 'Store address'|t('craft-product-price-history'),
+    label: 'Store address'|t('omnibus'),
     id: 'storeAddress', name: 'storeAddress', value: settings.storeAddress, errors: settings.getErrors('storeAddress'),
 }) }}
 
 {{ forms.textField({
-    label: 'Store code'|t('craft-product-price-history'),
+    label: 'Store code'|t('omnibus'),
     id: 'storeCode', name: 'storeCode', value: settings.storeCode, errors: settings.getErrors('storeCode'),
 }) }}
 
 {{ forms.textField({
-    label: 'Publish directory'|t('craft-product-price-history'),
-    instructions: 'Under the web root so the files are public; aliases allowed.'|t('craft-product-price-history'),
+    label: 'Publish directory'|t('omnibus'),
+    instructions: 'Under the web root so the files are public; aliases allowed.'|t('omnibus'),
     id: 'priceListPath', name: 'priceListPath', value: settings.priceListPath, errors: settings.getErrors('priceListPath'),
 }) }}
 
 {{ forms.textField({
-    label: 'Index route'|t('craft-product-price-history'),
-    instructions: 'Public page that lists the published files.'|t('craft-product-price-history'),
+    label: 'Index route'|t('omnibus'),
+    instructions: 'Public page that lists the published files.'|t('omnibus'),
     id: 'priceListRoute', name: 'priceListRoute', value: settings.priceListRoute, errors: settings.getErrors('priceListRoute'),
 }) }}
 
 {{ forms.textField({
-    label: 'Retention (days)'|t('craft-product-price-history'),
-    instructions: 'Files stay published this long (art. VII: 30 days).'|t('craft-product-price-history'),
+    label: 'Retention (days)'|t('omnibus'),
+    instructions: 'Files stay published this long (art. VII: 30 days).'|t('omnibus'),
     id: 'retentionDays', name: 'retentionDays', type: 'number', size: 4, value: settings.retentionDays, errors: settings.getErrors('retentionDays'),
 }) }}
 
 {{ forms.textField({
-    label: 'CSV delimiter'|t('craft-product-price-history'),
+    label: 'CSV delimiter'|t('omnibus'),
     id: 'csvDelimiter', name: 'csvDelimiter', size: 2, value: settings.csvDelimiter, errors: settings.getErrors('csvDelimiter'),
 }) }}
 
-<h3>{{ 'Field mapping'|t('craft-product-price-history') }}</h3>
-<p class="light">{{ 'Handles of the fields that feed the optional columns. Leave empty to publish the column blank.'|t('craft-product-price-history') }}</p>
+<h3>{{ 'Field mapping'|t('omnibus') }}</h3>
+<p class="light">{{ 'Handles of the fields that feed the optional columns. Leave empty to publish the column blank.'|t('omnibus') }}</p>
 
-{{ forms.textField({ label: 'Brand'|t('craft-product-price-history'), id: 'brandField', name: 'brandField', value: settings.brandField }) }}
-{{ forms.textField({ label: 'Barcode'|t('craft-product-price-history'), id: 'barcodeField', name: 'barcodeField', value: settings.barcodeField }) }}
-{{ forms.textField({ label: 'Unit of measure'|t('craft-product-price-history'), id: 'unitField', name: 'unitField', value: settings.unitField }) }}
-{{ forms.textField({ label: 'Price per unit of measure'|t('craft-product-price-history'), id: 'unitPriceField', name: 'unitPriceField', value: settings.unitPriceField }) }}
+{{ forms.textField({ label: 'Brand'|t('omnibus'), id: 'brandField', name: 'brandField', value: settings.brandField }) }}
+{{ forms.textField({ label: 'Barcode'|t('omnibus'), id: 'barcodeField', name: 'barcodeField', value: settings.barcodeField }) }}
+{{ forms.textField({ label: 'Unit of measure'|t('omnibus'), id: 'unitField', name: 'unitField', value: settings.unitField }) }}
+{{ forms.textField({ label: 'Price per unit of measure'|t('omnibus'), id: 'unitPriceField', name: 'unitPriceField', value: settings.unitPriceField }) }}

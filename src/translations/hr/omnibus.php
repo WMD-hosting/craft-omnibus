@@ -15,7 +15,7 @@ return [
     'Days before a reduction whose lowest price must be shown (Consumer Protection Act, art. 19).' => 'Broj dana prije sniženja čija se najniža cijena mora istaknuti (Zakon o zaštiti potrošača, čl. 19).',
     'Price list files' => 'Datoteke cjenika',
     'Publish the daily price list' => 'Objavljuj dnevni cjenik',
-    'Run `craft craft-product-price-history/price-list/publish` from cron every day before 08:00.' => 'Pokreći `craft craft-product-price-history/price-list/publish` iz crona svaki dan prije 08:00.',
+    'Run `craft omnibus/price-list/publish` from cron every day before 08:00.' => 'Pokreći `craft omnibus/price-list/publish` iz crona svaki dan prije 08:00.',
     'Store type' => 'Oblik prodajnog objekta',
     'Part of the price-list file name (art. VI), e.g. "internetska trgovina".' => 'Dio naziva datoteke (čl. VI), npr. "internetska trgovina".',
     'Store address' => 'Adresa prodajnog objekta',
