@@ -1,4 +1,10 @@
-# Release Notes for Omnibus & Sidrena cijena
+# Release Notes for Omnibus and Anchor Price
+
+## 1.1.1 - 2026-09-20
+
+### Changed
+- Plugin renamed to "Omnibus and Anchor Price"; every control-panel label and the public price-list page are now English source strings with Croatian translations.
+- Price-list index date printed as d.m.Y.
 
 ## 1.1.0 - 2026-09-20
 

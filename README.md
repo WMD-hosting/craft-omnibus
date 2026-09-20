@@ -1,4 +1,4 @@
-# Omnibus & Sidrena cijena for Craft Commerce
+# Omnibus and Anchor Price for Craft Commerce
 
 Price history per variant, and the two reference prices EU and Croatian law
 require next to a selling price:
@@ -46,7 +46,7 @@ have no history at all.
 
 ## Settings
 
-**Settings → Plugins → Omnibus & Sidrena cijena**
+**Settings → Plugins → Omnibus and Anchor Price**
 
 | Setting | Default | Notes |
 |---|---|---|

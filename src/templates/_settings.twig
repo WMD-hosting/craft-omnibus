@@ -1,6 +1,6 @@
 {% import '_includes/forms' as forms %}
 
-<h2>{{ 'Sidrena cijena (NN 101/2026)'|t('craft-product-price-history') }}</h2>
+<h2>{{ 'Anchor price (sidrena cijena, NN 101/2026)'|t('craft-product-price-history') }}</h2>
 
 {{ forms.dateField({
     label: 'Reference day'|t('craft-product-price-history'),
@@ -30,7 +30,7 @@
 
 {{ forms.textField({
     label: 'Lowest-price window (days)'|t('craft-product-price-history'),
-    instructions: 'Days before a reduction whose lowest price must be shown (Zakon o zaštiti potrošača, čl. 19).'|t('craft-product-price-history'),
+    instructions: 'Days before a reduction whose lowest price must be shown (Consumer Protection Act, art. 19).'|t('craft-product-price-history'),
     id: 'lowestPriceDays',
     name: 'lowestPriceDays',
     type: 'number',
@@ -41,7 +41,7 @@
 
 <hr>
 
-<h2>{{ 'Cjenik (price list files)'|t('craft-product-price-history') }}</h2>
+<h2>{{ 'Price list files (cjenik)'|t('craft-product-price-history') }}</h2>
 
 {{ forms.lightswitchField({
     label: 'Publish the daily price list'|t('craft-product-price-history'),
@@ -52,18 +52,18 @@
 }) }}
 
 {{ forms.textField({
-    label: 'Oblik prodajnog objekta'|t('craft-product-price-history'),
-    instructions: 'Part of the file name (čl. VI), e.g. "internetska trgovina".'|t('craft-product-price-history'),
+    label: 'Store type'|t('craft-product-price-history'),
+    instructions: 'Part of the price-list file name (art. VI), e.g. "internetska trgovina".'|t('craft-product-price-history'),
     id: 'storeType', name: 'storeType', value: settings.storeType, errors: settings.getErrors('storeType'),
 }) }}
 
 {{ forms.textField({
-    label: 'Adresa prodajnog objekta'|t('craft-product-price-history'),
+    label: 'Store address'|t('craft-product-price-history'),
     id: 'storeAddress', name: 'storeAddress', value: settings.storeAddress, errors: settings.getErrors('storeAddress'),
 }) }}
 
 {{ forms.textField({
-    label: 'Oznaka prodajnog objekta'|t('craft-product-price-history'),
+    label: 'Store code'|t('craft-product-price-history'),
     id: 'storeCode', name: 'storeCode', value: settings.storeCode, errors: settings.getErrors('storeCode'),
 }) }}
 
@@ -81,7 +81,7 @@
 
 {{ forms.textField({
     label: 'Retention (days)'|t('craft-product-price-history'),
-    instructions: 'Files stay published this long (čl. VII: 30).'|t('craft-product-price-history'),
+    instructions: 'Files stay published this long (art. VII: 30 days).'|t('craft-product-price-history'),
     id: 'retentionDays', name: 'retentionDays', type: 'number', size: 4, value: settings.retentionDays, errors: settings.getErrors('retentionDays'),
 }) }}
 
@@ -93,7 +93,7 @@
 <h3>{{ 'Field mapping'|t('craft-product-price-history') }}</h3>
 <p class="light">{{ 'Handles of the fields that feed the optional columns. Leave empty to publish the column blank.'|t('craft-product-price-history') }}</p>
 
-{{ forms.textField({ label: 'Marka (brand)'|t('craft-product-price-history'), id: 'brandField', name: 'brandField', value: settings.brandField }) }}
-{{ forms.textField({ label: 'Barkod'|t('craft-product-price-history'), id: 'barcodeField', name: 'barcodeField', value: settings.barcodeField }) }}
-{{ forms.textField({ label: 'Jedinica mjere'|t('craft-product-price-history'), id: 'unitField', name: 'unitField', value: settings.unitField }) }}
-{{ forms.textField({ label: 'Cijena za jedinicu mjere'|t('craft-product-price-history'), id: 'unitPriceField', name: 'unitPriceField', value: settings.unitPriceField }) }}
+{{ forms.textField({ label: 'Brand'|t('craft-product-price-history'), id: 'brandField', name: 'brandField', value: settings.brandField }) }}
+{{ forms.textField({ label: 'Barcode'|t('craft-product-price-history'), id: 'barcodeField', name: 'barcodeField', value: settings.barcodeField }) }}
+{{ forms.textField({ label: 'Unit of measure'|t('craft-product-price-history'), id: 'unitField', name: 'unitField', value: settings.unitField }) }}
+{{ forms.textField({ label: 'Price per unit of measure'|t('craft-product-price-history'), id: 'unitPriceField', name: 'unitPriceField', value: settings.unitPriceField }) }}

@@ -1,7 +1,7 @@
 {
     "name": "wmd/craft-omnibus",
     "description": "Omnibus and sidrena cijena for Craft Commerce: price history per variant, the lowest price in the 30 days before a reduction, the Croatian anchor price (NN 101/2026), and the daily machine-readable price list.",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "type": "craft-plugin",
     "license": "MIT",
     "keywords": ["craft", "cms", "craftcms", "commerce", "omnibus", "price history", "sidrena cijena", "cjenik"],
@@ -27,7 +27,7 @@
     },
     "extra": {
         "handle": "craft-product-price-history",
-        "name": "Omnibus & Sidrena cijena",
+        "name": "Omnibus and Anchor Price",
         "developer": "WMD",
         "developerUrl": "https://wmd.hr",
         "documentationUrl": "https://github.com/WMD-hosting/craft-omnibus/blob/main/README.md",
