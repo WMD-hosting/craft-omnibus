@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="hr">
+<head>
+  <meta charset="utf-8">
+  <title>Cjenik proizvoda</title>
+  <meta name="robots" content="index, follow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>body{font:16px/1.5 system-ui,sans-serif;max-width:60rem;margin:2rem auto;padding:0 1rem;color:#111}table{border-collapse:collapse;width:100%}td,th{text-align:left;padding:.4rem .6rem;border-bottom:1px solid #ddd}small{color:#666}</style>
+</head>
+<body>
+  <h1>Cjenik proizvoda</h1>
+  <p>Objavljeno prema Odluci o objavi cjenika proizvoda i usluga (NN 101/2026). Datoteke ostaju dostupne {{ retentionDays }} dana od objave. Sidrena cijena se odnosi na dan {{ anchorDate|date('j. n. Y.') }}.</p>
+  {% if files|length %}
+    <table>
+      <thead><tr><th>Datoteka</th><th>Objavljeno</th><th>Veličina</th></tr></thead>
+      <tbody>
+        {% for f in files %}
+          <tr><td><a href="{{ f.url }}">{{ f.name }}</a></td><td>{{ f.date }}</td><td><small>{{ (f.size / 1024)|number_format(1) }} kB</small></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Cjenik još nije objavljen.</p>
+  {% endif %}
+</body>
+</html>

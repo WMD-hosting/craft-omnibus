@@ -1,0 +1,52 @@
+{
+    "name": "wmd/craft-omnibus",
+    "description": "Omnibus and sidrena cijena for Craft Commerce: price history per variant, the lowest price in the 30 days before a reduction, the Croatian anchor price (NN 101/2026), and the daily machine-readable price list.",
+    "version": "1.1.0",
+    "type": "craft-plugin",
+    "license": "MIT",
+    "keywords": ["craft", "cms", "craftcms", "commerce", "omnibus", "price history", "sidrena cijena", "cjenik"],
+    "support": {
+        "email": "info@wmd.hr",
+        "issues": "https://github.com/WMD-hosting/craft-omnibus/issues",
+        "source": "https://github.com/WMD-hosting/craft-omnibus",
+        "docs": "https://github.com/WMD-hosting/craft-omnibus/blob/main/README.md"
+    },
+    "require": {
+        "php": ">=8.2",
+        "craftcms/cms": "^5.0.0",
+        "craftcms/commerce": "^5.0.0"
+    },
+    "require-dev": {
+        "craftcms/ecs": "dev-main",
+        "craftcms/phpstan": "dev-main"
+    },
+    "autoload": {
+        "psr-4": {
+            "wmd\\craftproductpricehistory\\": "src/"
+        }
+    },
+    "extra": {
+        "handle": "craft-product-price-history",
+        "name": "Omnibus & Sidrena cijena",
+        "developer": "WMD",
+        "developerUrl": "https://wmd.hr",
+        "documentationUrl": "https://github.com/WMD-hosting/craft-omnibus/blob/main/README.md",
+        "changelogUrl": "https://raw.githubusercontent.com/WMD-hosting/craft-omnibus/main/CHANGELOG.md",
+        "class": "wmd\\craftproductpricehistory\\ProductHistory"
+    },
+    "scripts": {
+        "check-cs": "ecs check --ansi",
+        "fix-cs": "ecs check --ansi --fix",
+        "phpstan": "phpstan --memory-limit=1G"
+    },
+    "config": {
+        "sort-packages": true,
+        "platform": {
+            "php": "8.2"
+        },
+        "allow-plugins": {
+            "yiisoft/yii2-composer": true,
+            "craftcms/plugin-installer": true
+        }
+    }
+}
