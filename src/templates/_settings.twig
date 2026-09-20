@@ -1,6 +1,6 @@
 {% import '_includes/forms' as forms %}
 
-<h2>{{ 'Anchor price (sidrena cijena, NN 101/2026)'|t('craft-product-price-history') }}</h2>
+<h2>{{ 'Anchor price (NN 101/2026)'|t('craft-product-price-history') }}</h2>
 
 {{ forms.dateField({
     label: 'Reference day'|t('craft-product-price-history'),
@@ -13,8 +13,9 @@
 
 {{ forms.textField({
     label: 'Label'|t('craft-product-price-history'),
-    instructions: 'Printed next to the selling price. "Sidrena cijena" and "dodatna cijena" are both official.'|t('craft-product-price-history'),
+    instructions: 'Printed next to the selling price. Leave empty to use the translated default.'|t('craft-product-price-history'),
     id: 'anchorLabel',
+    placeholder: 'Anchor price'|t('craft-product-price-history'),
     name: 'anchorLabel',
     value: settings.anchorLabel,
     errors: settings.getErrors('anchorLabel'),
@@ -41,7 +42,7 @@
 
 <hr>
 
-<h2>{{ 'Price list files (cjenik)'|t('craft-product-price-history') }}</h2>
+<h2>{{ 'Price list files'|t('craft-product-price-history') }}</h2>
 
 {{ forms.lightswitchField({
     label: 'Publish the daily price list'|t('craft-product-price-history'),

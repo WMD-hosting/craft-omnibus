@@ -214,9 +214,11 @@ class PriceListService extends Component
             $when = date('Y-m-d H:i', filemtime($file));
             $items .= "<li><a href=\"{$name}\">{$name}</a> <small>({$when})</small></li>\n";
         }
-        $html = "<!doctype html>\n<html lang=\"hr\"><head><meta charset=\"utf-8\"><title>Cjenik</title>"
+        $t = static fn(string $s, array $p = []) => Craft::t('craft-product-price-history', $s, $p);
+        $lang = explode('-', Craft::$app->language)[0];
+        $html = "<!doctype html>\n<html lang=\"{$lang}\"><head><meta charset=\"utf-8\"><title>{$t('Product price list')}</title>"
             . "<meta name=\"robots\" content=\"index,follow\"></head><body>"
-            . "<h1>Cjenik proizvoda</h1><p>Objavljeno prema Odluci o objavi cjenika proizvoda i usluga (NN 101/2026). Datoteke ostaju dostupne 30 dana.</p>"
+            . "<h1>{$t('Product price list')}</h1><p>{$t('Published under the Decision on publishing price lists of products and services (NN 101/2026). Files stay available for {days} days after publication.', ['days' => 30])}</p>"
             . "<ul>\n{$items}</ul></body></html>\n";
         $path = "$dir/index.html";
         FileHelper::writeToFile($path, $html);

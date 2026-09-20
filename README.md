@@ -1,4 +1,4 @@
-# Omnibus and Anchor Price for Craft Commerce
+# Omnibus, Price History and Anchor Price for Craft Commerce
 
 Price history per variant, and the two reference prices EU and Croatian law
 require next to a selling price:
@@ -46,12 +46,12 @@ have no history at all.
 
 ## Settings
 
-**Settings → Plugins → Omnibus and Anchor Price**
+**Settings → Plugins → Omnibus, Price History and Anchor Price**
 
 | Setting | Default | Notes |
 |---|---|---|
 | Reference day | 2026-09-10 | the day the anchor price is read for |
-| Label | Sidrena cijena | printed next to the selling price |
+| Label | empty | printed next to the selling price; empty uses the translated default ("Anchor price", hr "Sidrena cijena") |
 | Products listed after the reference day use their first price | on | the anchor then carries the listing date |
 | Lowest-price window | 30 days | |
 | Publish the daily price list | on | |

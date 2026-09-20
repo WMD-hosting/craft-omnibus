@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace wmd\craftproductpricehistory\variables;
 
+use Craft;
+
 use craft\commerce\elements\Product;
 use craft\commerce\elements\Variant;
 use DateTime;
@@ -33,10 +35,11 @@ class ProductPriceHistoryVariable
         return $anchor->getVariantAnchor((int)$id);
     }
 
-    /** Label to print next to the price ("Sidrena cijena" by default). */
+    /** Label to print next to the price; the setting, or the translated default ("Anchor price", hr "Sidrena cijena"). */
     public function anchorLabel(): string
     {
-        return ProductHistory::$plugin->getSettings()->anchorLabel;
+        return ProductHistory::$plugin->getSettings()->anchorLabel
+            ?: Craft::t('craft-product-price-history', 'Anchor price');
     }
 
     /** The reference day as configured. */

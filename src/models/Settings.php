@@ -29,7 +29,7 @@ class Settings extends Model
      * @var string Label shown next to the selling price. The decision names
      * both "dodatna cijena" and "sidrena cijena".
      */
-    public string $anchorLabel = 'Sidrena cijena';
+    public string $anchorLabel = '';
 
     /**
      * @var bool For products first listed after the reference day, use the
@@ -89,7 +89,7 @@ class Settings extends Model
     protected function defineRules(): array
     {
         return [
-            [['anchorDate', 'anchorLabel', 'storeType', 'storeCode', 'priceListPath', 'priceListRoute', 'csvDelimiter'], 'required'],
+            [['anchorDate', 'storeType', 'storeCode', 'priceListPath', 'priceListRoute', 'csvDelimiter'], 'required'],
             [['priceListRoute'], 'match', 'pattern' => '/^[a-z0-9\/-]+$/i'],
             [['anchorDate'], 'date', 'format' => 'php:Y-m-d'],
             [['lowestPriceDays', 'retentionDays'], 'integer', 'min' => 1],

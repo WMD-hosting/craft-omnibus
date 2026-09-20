@@ -4,16 +4,16 @@
  * Croatian control-panel strings.
  */
 return [
-    'Anchor price (sidrena cijena, NN 101/2026)' => 'Sidrena cijena (NN 101/2026)',
+    'Anchor price (NN 101/2026)' => 'Sidrena cijena (NN 101/2026)',
     'Reference day' => 'Referentni dan',
     'The anchor price is the price applicable on this day. The decision sets 10 September 2026.' => 'Sidrena cijena je cijena koja je vrijedila na ovaj dan. Odluka propisuje 10. rujna 2026.',
     'Label' => 'Oznaka',
-    'Printed next to the selling price. "Sidrena cijena" and "dodatna cijena" are both official.' => 'Ispisuje se uz maloprodajnu cijenu. "Sidrena cijena" i "dodatna cijena" su oba službena naziva.',
+    'Printed next to the selling price. Leave empty to use the translated default.' => 'Ispisuje se uz maloprodajnu cijenu. Ostavi prazno za prevedeni zadani naziv.',
     'Products listed after the reference day use their first price' => 'Proizvodi uvedeni nakon referentnog dana koriste svoju prvu cijenu',
     'The anchor then carries the first listing date instead of the reference day.' => 'Sidro tada nosi datum prvog uvrštenja umjesto referentnog dana.',
     'Lowest-price window (days)' => 'Prozor najniže cijene (dana)',
     'Days before a reduction whose lowest price must be shown (Consumer Protection Act, art. 19).' => 'Broj dana prije sniženja čija se najniža cijena mora istaknuti (Zakon o zaštiti potrošača, čl. 19).',
-    'Price list files (cjenik)' => 'Cjenik (datoteke cjenika)',
+    'Price list files' => 'Datoteke cjenika',
     'Publish the daily price list' => 'Objavljuj dnevni cjenik',
     'Run `craft craft-product-price-history/price-list/publish` from cron every day before 08:00.' => 'Pokreći `craft craft-product-price-history/price-list/publish` iz crona svaki dan prije 08:00.',
     'Store type' => 'Oblik prodajnog objekta',
@@ -40,4 +40,6 @@ return [
     'Published' => 'Objavljeno',
     'Size' => 'Veličina',
     'The price list has not been published yet.' => 'Cjenik još nije objavljen.',
+    'Anchor price' => 'Sidrena cijena',
+    'Published under the Decision on publishing price lists of products and services (NN 101/2026). Files stay available for {days} days after publication.' => 'Objavljeno prema Odluci o objavi cjenika proizvoda i usluga (NN 101/2026). Datoteke ostaju dostupne {days} dana od objave.',
 ];

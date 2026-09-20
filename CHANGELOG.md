@@ -1,4 +1,11 @@
-# Release Notes for Omnibus and Anchor Price
+# Release Notes for Omnibus, Price History and Anchor Price
+
+## 1.1.2 - 2026-09-20
+
+### Changed
+- Plugin renamed to "Omnibus, Price History and Anchor Price".
+- Anchor label setting is optional; when empty the translated default is used ("Anchor price", Croatian "Sidrena cijena").
+- Control-panel headings and the generated price-list index no longer carry Croatian source strings; Croatian comes from translations.
 
 ## 1.1.1 - 2026-09-20
 
