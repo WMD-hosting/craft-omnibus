@@ -135,7 +135,12 @@ class ProductHistory extends Plugin
                     ->where(['purchasableId' => $variant->id])
                     ->orderBy(['storeId' => SORT_ASC]) // pick the first store arbitrarily if multiple exist
                     ->scalar();
-                    
+
+                // scalar() returns false when there is no store row; false would be stored as 0.00
+                if ($oldPrice === false) {
+                    $oldPrice = null;
+                }
+
                 // add to product_price_history if it doesn't exist
                 if (!$productPriceHistory && $oldPrice !== null) {
                     ProductHistory::$plugin
