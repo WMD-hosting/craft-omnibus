@@ -1,6 +1,6 @@
 # Release Notes for Omnibus, Price History and Anchor Price
 
-## 1.1.4 - Unreleased
+## 1.1.4 - 2026-10-11
 
 ### Fixed
 - Saving a product whose product type has versioning enabled no longer fails with `TypeError: addProductHistoryPrice(): Argument #2 ($variantId) must be of type int, null given` when a variant changed since the last revision. Variant revisions are no longer passed to the price history.
