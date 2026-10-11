@@ -115,8 +115,10 @@ class ProductHistory extends Plugin
             function (ModelEvent $event) {
                 $variant = $event->sender;
 
-                // Ignore first save & drafts
-                if ($variant->firstSave || $variant->getIsDraft()) {
+                // Ignore first save, drafts and revisions. With versioning on, a product
+                // save duplicates every changed variant into the revision: id is still
+                // null here and firstSave is false, so only the id check catches it.
+                if ($variant->firstSave || $variant->getIsDraft() || $variant->getIsRevision() || !$variant->id) {
                     return;
                 }
 
