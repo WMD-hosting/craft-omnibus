@@ -4,12 +4,11 @@ namespace wmd\craftproductpricehistory\services;
 
 use Craft;
 use craft\base\Component;
-use DateTime;
 use craft\commerce\elements\Product;
 use craft\commerce\elements\Variant;
+use DateTime;
 use wmd\craftproductpricehistory\models\ProductPriceHistoryModel;
 use wmd\craftproductpricehistory\records\ProductPriceHistoryRecord;
-
 
 class ProductPriceHistoryService extends Component
 {
@@ -145,8 +144,8 @@ class ProductPriceHistoryService extends Component
                     'currentPage' => $page,
                     'totalPages' => 0,
                     'totalProducts' => 0,
-                    'limit' => $limit
-                ]
+                    'limit' => $limit,
+                ],
             ];
         }
 
@@ -225,7 +224,7 @@ class ProductPriceHistoryService extends Component
 
                     $variants[] = [
                         'variant' => $variantsById[$variantId],
-                        'priceHistory' => $priceHistory
+                        'priceHistory' => $priceHistory,
                     ];
                 }
             }
@@ -233,7 +232,7 @@ class ProductPriceHistoryService extends Component
             if (!empty($variants)) {
                 $products[] = [
                     'product' => $product,
-                    'variants' => $variants
+                    'variants' => $variants,
                 ];
             }
         }
@@ -244,14 +243,14 @@ class ProductPriceHistoryService extends Component
                 'currentPage' => $page,
                 'totalPages' => $this->getTotalPagesCount($limit),
                 'totalProducts' => $this->getTotalProductsCount(),
-                'limit' => $limit
-            ]
+                'limit' => $limit,
+            ],
         ];
     }
 
     /**
      * Get total count of products with price history
-     * 
+     *
      * @return int
      */
     public function getTotalProductsCount(): int
@@ -264,7 +263,7 @@ class ProductPriceHistoryService extends Component
 
     /**
      * Get total pages count for pagination
-     * 
+     *
      * @param int $limit
      * @return int
      */
@@ -327,8 +326,8 @@ class ProductPriceHistoryService extends Component
                         'currentPage' => $page,
                         'totalPages' => 0,
                         'totalProducts' => 0,
-                        'limit' => $limit
-                    ]
+                        'limit' => $limit,
+                    ],
                 ];
             }
 
@@ -349,8 +348,8 @@ class ProductPriceHistoryService extends Component
                         'currentPage' => $page,
                         'totalPages' => 0,
                         'totalProducts' => 0,
-                        'limit' => $limit
-                    ]
+                        'limit' => $limit,
+                    ],
                 ];
             }
 
@@ -429,7 +428,7 @@ class ProductPriceHistoryService extends Component
 
                         $variants[] = [
                             'variant' => $variantsById[$variantId],
-                            'priceHistory' => $priceHistory
+                            'priceHistory' => $priceHistory,
                         ];
                     }
                 }
@@ -437,7 +436,7 @@ class ProductPriceHistoryService extends Component
                 if (!empty($variants)) {
                     $products[] = [
                         'product' => $product,
-                        'variants' => $variants
+                        'variants' => $variants,
                     ];
                 }
             }
@@ -450,8 +449,8 @@ class ProductPriceHistoryService extends Component
                     'currentPage' => $page,
                     'totalPages' => $this->getSearchTotalPagesCount($searchTerm, $limit),
                     'totalProducts' => $this->getSearchTotalProductsCount($searchTerm),
-                    'limit' => $limit
-                ]
+                    'limit' => $limit,
+                ],
             ];
         } catch (\Exception $e) {
             Craft::error('Search service error: ' . $e->getMessage(), __METHOD__);
@@ -461,7 +460,7 @@ class ProductPriceHistoryService extends Component
 
     /**
      * Get total count of products with price history that match search
-     * 
+     *
      * @param string $searchTerm
      * @return int
      */
@@ -502,7 +501,7 @@ class ProductPriceHistoryService extends Component
 
     /**
      * Get total pages count for search pagination
-     * 
+     *
      * @param string $searchTerm
      * @param int $limit
      * @return int

@@ -3,23 +3,23 @@
 namespace wmd\craftproductpricehistory;
 
 use Craft;
-use yii\base\Event;
+use craft\base\Model;
 use craft\base\Plugin;
+use craft\commerce\elements\Product;
+use craft\commerce\elements\Variant;
+use craft\db\Query;
 use craft\events\ModelEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\commerce\elements\Variant;
-use craft\commerce\elements\Product;
-use craft\db\Query;
 use craft\services\Utilities;
 use craft\web\twig\variables\CraftVariable;
-use craft\base\Model;
 use wmd\craftproductpricehistory\models\Settings;
+use wmd\craftproductpricehistory\records\ProductPriceHistoryRecord;
 use wmd\craftproductpricehistory\services\AnchorService;
 use wmd\craftproductpricehistory\services\PriceListService;
 use wmd\craftproductpricehistory\services\ProductPriceHistoryService;
 use wmd\craftproductpricehistory\utilities\ProductPriceUtility;
 use wmd\craftproductpricehistory\variables\ProductPriceHistoryVariable;
-use wmd\craftproductpricehistory\records\ProductPriceHistoryRecord;
+use yii\base\Event;
 
 /**
  * @property-read ProductPriceHistoryService $productPriceHistoryService
@@ -116,7 +116,7 @@ class ProductHistory extends Plugin
         Event::on(
             Variant::class,
             Variant::EVENT_BEFORE_SAVE,
-            function (ModelEvent $event) {
+            function(ModelEvent $event) {
                 $variant = $event->sender;
 
                 // Ignore first save, drafts and revisions. Craft forces firstSave to false for
@@ -181,7 +181,7 @@ class ProductHistory extends Plugin
         Event::on(
             Product::class,
             Product::EVENT_AFTER_SAVE,
-            function (ModelEvent $event) {
+            function(ModelEvent $event) {
                 if ($event->sender->firstSave) {
                     $product = $event->sender;
 
