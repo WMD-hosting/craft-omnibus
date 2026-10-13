@@ -44,14 +44,14 @@ class ProductPriceHistoryController extends Controller
             return $this->asJson([
                 'success' => true,
                 'data' => $data,
-                'searchTerm' => $searchTerm
+                'searchTerm' => $searchTerm,
             ]);
         } catch (\Exception $e) {
             Craft::error('Search error: ' . $e->getMessage(), __METHOD__);
             return $this->asJson([
                 'success' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
-} 
+}

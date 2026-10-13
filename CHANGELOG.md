@@ -1,5 +1,10 @@
 # Release Notes for Omnibus, Price History and Anchor Price
 
+## 1.1.6 - 2026-10-13
+
+### Changed
+- No functional changes. The source now passes PHPStan (level 4) and ECS, and `phpstan/phpstan` is a dev dependency so `composer install` provides `vendor/bin/phpstan`.
+
 ## 1.1.5 - 2026-10-13
 
 ### Fixed

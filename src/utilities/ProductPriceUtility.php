@@ -46,4 +46,4 @@ class ProductPriceUtility extends Utility
             'data' => $data,
         ]);
     }
-} 
+}
