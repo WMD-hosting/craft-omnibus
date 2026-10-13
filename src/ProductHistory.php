@@ -115,16 +115,25 @@ class ProductHistory extends Plugin
             function (ModelEvent $event) {
                 $variant = $event->sender;
 
-                // Ignore first save, drafts and revisions. With versioning on, a product
-                // save duplicates every changed variant into the revision: id is still
-                // null here and firstSave is false, so only the id check catches it.
-                if ($variant->firstSave || $variant->getIsDraft() || $variant->getIsRevision() || !$variant->id) {
+                // Ignore first save, drafts and revisions. Craft forces firstSave to false for
+                // drafts and revisions, so a new variant revision (no id yet) gets past it.
+                // Check the variant's own flags only: a canonical variant edited from a product
+                // draft has the draft as owner but still saves the live price.
+                if ($variant->firstSave || !$variant->id || $variant->getIsDraft() || $variant->getIsRevision()) {
+                    return;
+                }
+
+                // productId is the owner the variant was loaded through, which is the draft when
+                // a product draft re-saves its canonical variants. Rows keyed to the draft cascade
+                // away when the draft is applied or deleted, so key them to the primary owner.
+                $productId = $variant->getPrimaryOwnerId();
+                if (!$productId) {
                     return;
                 }
 
                 // check if product was added to product_price_history
                 $productPriceHistory = ProductPriceHistoryRecord::find()
-                    ->where(['productId' => $variant->productId, 'variantId' => $variant->id])
+                    ->where(['productId' => $productId, 'variantId' => $variant->id])
                     ->one();
 
                 // $oldVariant = Commerce::getInstance()->getVariants()->getVariantById($variant->id);
@@ -145,7 +154,7 @@ class ProductHistory extends Plugin
                 if (!$productPriceHistory && $oldPrice !== null) {
                     ProductHistory::$plugin
                         ->productPriceHistoryService
-                        ->addProductHistoryPrice($variant->productId, $variant->id, $oldPrice);
+                        ->addProductHistoryPrice($productId, $variant->id, $oldPrice);
                 }
 
                 $newPrice = $variant->basePrice;
@@ -157,7 +166,7 @@ class ProductHistory extends Plugin
                 ProductHistory::$plugin
                     ->productPriceHistoryService
                     ->addProductHistoryPrice(
-                        $variant->productId,
+                        $productId,
                         $variant->id,
                         $newPrice,
                     );

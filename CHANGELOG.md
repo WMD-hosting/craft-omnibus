@@ -1,5 +1,10 @@
 # Release Notes for Omnibus, Price History and Anchor Price
 
+## 1.1.5 - 2026-10-13
+
+### Fixed
+- Price history is recorded under the variant's primary product. When a product draft re-saved its live variants (for example after a variant was added in the draft), the rows were recorded under the draft's id and deleted along with the draft when it was applied. Rows lost that way before this release cannot be recovered by the plugin.
+
 ## 1.1.4 - 2026-10-11
 
 ### Fixed
