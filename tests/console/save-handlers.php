@@ -7,7 +7,9 @@
  * Usage, from any Craft install that has Omnibus and a product type with versioning:
  *   php tests/console/save-handlers.php <craft-root> <productId>
  * Everything runs inside a transaction that is rolled back. Exit code 0 = all PASS.
- * Step 4 also checks that a variant without a store row never records a 0.00 price.
+ * Step 4 checks that a variant re-saved through a product draft records its history
+ * under the canonical product, step 5 that a variant without a store row never
+ * records a 0.00 price.
  */
 
 [$_, $root, $productId] = $argv + [null, null, null];
@@ -17,6 +19,7 @@ require $root . '/bootstrap.php';
 $app = require CRAFT_VENDOR_PATH . '/craftcms/cms/bootstrap/console.php';
 
 use craft\commerce\elements\Product;
+use craft\commerce\elements\Variant;
 use craft\db\Query;
 
 $product = Product::find()->id((int)$productId)->status(null)->one();
@@ -86,7 +89,43 @@ try {
         $fail++;
     }
 
-    // 4. No commerce_purchasables_stores row and no history yet: the old price is
+    // 4. A product draft re-saves its live variants (e.g. after a variant is added in
+    //    the draft). The variant is loaded through the draft, so productId is the
+    //    draft's id. History must go under the canonical product: rows under the
+    //    draft cascade away when the draft is applied or deleted.
+    $product = Product::find()->id((int)$productId)->status(null)->one();
+    $draft = Craft::$app->getDrafts()->createDraft($product);
+    $variant = Variant::find()->ownerId($draft->id)->status(null)->one();
+    $draftRows = fn() => (int)(new Query())->from('{{%product_price_history}}')
+        ->where(['productId' => $draft->id])->count();
+    $setup = $variant && !$variant->getIsDraft()
+        && (int)$variant->productId === (int)$draft->id
+        && (int)$variant->getPrimaryOwnerId() === (int)$product->id;
+    if (!$setup) {
+        printf("[FAIL] draft variant setup: expected the live variant owned by draft #%d, got %s\n",
+            $draft->id, $variant ? "variant #{$variant->id} productId={$variant->productId}" : 'none');
+        $fail++;
+    } else {
+        $newPrice = (float)$variant->basePrice + 2.34;
+        $variant->basePrice = $newPrice;
+        $mid = count($history());
+        try {
+            Craft::$app->getElements()->saveElement($variant);
+            $rows = array_slice($history(), $mid);
+            $good = count($rows) === 1
+                && (int)$rows[0]['variantId'] === (int)$variant->id
+                && abs((float)$rows[0]['price'] - $newPrice) < 0.001
+                && $draftRows() === 0;
+            printf("[%s] variant saved through draft #%d -> rows under product: %s, under draft: %d\n",
+                $good ? 'PASS' : 'FAIL', $draft->id, json_encode($rows), $draftRows());
+            $fail += $good ? 0 : 1;
+        } catch (Throwable $e) {
+            printf("[FAIL] draft variant save threw %s: %s\n", get_class($e), $e->getMessage());
+            $fail++;
+        }
+    }
+
+    // 5. No commerce_purchasables_stores row and no history yet: the old price is
     //    unknown, so nothing may be recorded as a 0.00 price.
     $variant = Product::find()->id((int)$productId)->status(null)->one()->getVariants()[0];
     Craft::$app->getDb()->createCommand()->delete('{{%commerce_purchasables_stores}}', ['purchasableId' => $variant->id])->execute();
