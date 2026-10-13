@@ -21,6 +21,10 @@ use wmd\craftproductpricehistory\utilities\ProductPriceUtility;
 use wmd\craftproductpricehistory\variables\ProductPriceHistoryVariable;
 use wmd\craftproductpricehistory\records\ProductPriceHistoryRecord;
 
+/**
+ * @property-read ProductPriceHistoryService $productPriceHistoryService
+ * @method Settings getSettings()
+ */
 class ProductHistory extends Plugin
 {
     /**

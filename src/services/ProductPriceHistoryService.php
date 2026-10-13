@@ -28,6 +28,7 @@ class ProductPriceHistoryService extends Component
         }
 
         // Check for duplicate recent entry (within last minute with same price)
+        /** @var ProductPriceHistoryRecord|null $recentEntry */
         $recentEntry = ProductPriceHistoryRecord::find()
             ->where(['variantId' => $variantId])
             ->andWhere(['>=', 'dateChanged', (new DateTime())->modify('-1 minute')->format('Y-m-d H:i:s')])
@@ -159,6 +160,7 @@ class ProductPriceHistoryService extends Component
         $variantIdsByProduct = [];
         $allVariantIds = [];
 
+        /** @var ProductPriceHistoryRecord[] $variantResults */
         $variantResults = ProductPriceHistoryRecord::find()
             ->select(['productId', 'variantId'])
             ->where(['productId' => $productIds])
@@ -184,6 +186,7 @@ class ProductPriceHistoryService extends Component
 
         // Batch load price history for all variants
         $priceHistoryByVariant = [];
+        /** @var ProductPriceHistoryRecord[] $allPriceHistory */
         $allPriceHistory = ProductPriceHistoryRecord::find()
             ->where(['variantId' => $allVariantIds])
             ->orderBy(['variantId' => SORT_ASC, 'dateChanged' => SORT_DESC])
@@ -361,6 +364,7 @@ class ProductPriceHistoryService extends Component
             $variantIdsByProduct = [];
             $allVariantIds = [];
 
+            /** @var ProductPriceHistoryRecord[] $variantResults */
             $variantResults = ProductPriceHistoryRecord::find()
                 ->select(['productId', 'variantId'])
                 ->where(['productId' => $productsWithHistory])
@@ -386,6 +390,7 @@ class ProductPriceHistoryService extends Component
 
             // Batch load price history for all variants
             $priceHistoryByVariant = [];
+            /** @var ProductPriceHistoryRecord[] $allPriceHistory */
             $allPriceHistory = ProductPriceHistoryRecord::find()
                 ->where(['variantId' => $allVariantIds])
                 ->orderBy(['variantId' => SORT_ASC, 'dateChanged' => SORT_DESC])
