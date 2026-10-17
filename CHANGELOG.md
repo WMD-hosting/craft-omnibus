@@ -1,5 +1,21 @@
 # Release Notes for Omnibus, Price History and Anchor Price
 
+## 1.3.0 - Unreleased
+
+### Added
+- A reference day per product: the `anchorDateRules` setting (CP table or `config/omnibus.php`) gives product types, or products related to a category or entry (subcategories included), another day than `anchorDate`, for the 2.5.2025 of food, drink, cosmetics, cleaning, toiletries and household goods (NN 101/2026-1212 t. IV; draft Pravilnik o isticanju bazne cijene, čl. 3(1)). `AnchorService::EVENT_DEFINE_ANCHOR_DATE` decides it in code. `AnchorService::anchorDateFor()`, `anchorDayFor()` and `anchorDates()`.
+- `craft omnibus/anchor/import <file> --as-of=Y-m-d [--dry-run]` writes the prices of a past reference day from a `sku;price` CSV; a second run with the same day updates its rows. Variants without history after that day are skipped (run `anchor/backfill` first), so an old price never stands in for the prices since.
+- The `anchorOverrideField` setting: a number or money field whose value, when filled, is the anchor (`source` `override`), for the draft Pravilnik's čl. 3(3) case the history cannot compute.
+- Price list columns `neto_kolicina` (from `netQuantityField` or a row handler; draft Pravilnik o načinu objave cjenika, čl. 3(2)) and `naziv_posebnog_oblika_prodaje` (NN 101/2026-1213 t. III): the name of the catalog pricing rule behind the sale price, else the `saleName` setting (default "Sniženje"). Rules with a customer condition are not named.
+- Each XML `proizvod` has a `sidreni_datum` attribute, its own reference day; rows carry it as `PriceListService::ROW_ANCHOR_DATE`.
+- `craft.productPriceHistory.anchorDate(variant)`.
+
+### Changed
+- The CSV and XML gain two columns: `neto_kolicina` after `marka`, `naziv_posebnog_oblika_prodaje` after `posebni_oblik_prodaje`. Readers that go by position rather than header need updating.
+- `AnchorService::getVariantAnchor()` takes a Variant as well as an id (the parameter is now `$variant`; named-argument callers using `variantId:` need updating); with rules, a date handler or an override field, the id alone costs a variant query.
+- `omnibus/anchor/show` no longer lists the `--as-of` and `--store` options it ignored.
+- The anchor's `date` is the variant's own reference day. The XML root `sidreni_datum` stays the default day, and the public index names every configured day.
+
 ## 1.2.1 - 2026-10-17
 
 ### Fixed

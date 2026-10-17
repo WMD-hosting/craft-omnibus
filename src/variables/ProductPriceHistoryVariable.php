@@ -31,8 +31,7 @@ class ProductPriceHistoryVariable
         if ($subject instanceof Product) {
             return $anchor->getProductAnchor($subject->id);
         }
-        $id = $subject instanceof Variant ? $subject->id : $subject;
-        return $anchor->getVariantAnchor((int)$id);
+        return $anchor->getVariantAnchor($subject);
     }
 
     /** Label to print next to the price; the setting, or the translated default ("Anchor price", hr "Sidrena cijena"). */
@@ -42,10 +41,12 @@ class ProductPriceHistoryVariable
             ?: Craft::t('omnibus', 'Anchor price');
     }
 
-    /** The reference day as configured. */
-    public function anchorDate(): DateTime
+    /** The reference day of a variant, or the default one (`anchorDate`) without. */
+    public function anchorDate(Variant|int|null $subject = null): DateTime
     {
-        return ProductHistory::$plugin->getAnchor()->anchorDay();
+        $anchor = ProductHistory::$plugin->getAnchor();
+
+        return $subject === null ? $anchor->anchorDay() : $anchor->anchorDayFor($subject);
     }
 
     /**
