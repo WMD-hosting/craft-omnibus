@@ -133,9 +133,11 @@ Event::on(PriceListService::class, PriceListService::EVENT_REGISTER_OUTLETS, fun
 });
 ```
 
-Each outlet's file has the web prices. With `inventoryLocationId`, variants
-that track stock are `dostupno` only when that location has them available;
-without it, availability is the web shop's. A store with its own prices, or
+Each outlet's file has the web prices. With `inventoryLocationId`, a variant
+the web sells only from stock is `nedostupno` when that location has none;
+otherwise, and without a location, availability is the web shop's. An outlet
+that is invalid or repeats another's file name is skipped, and `publish`
+exits with an error. A store with its own prices, or
 one that does not carry a product, changes the row:
 
 ```php

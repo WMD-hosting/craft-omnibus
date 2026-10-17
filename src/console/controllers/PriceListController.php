@@ -64,7 +64,12 @@ class PriceListController extends Controller
             $this->stdout("pruned {$result['pruned']} file(s) past retention\n");
         }
 
-        return ExitCode::OK;
+        // A skipped outlet has no file today, which the decision does not allow: fail the cron run.
+        foreach ($result['skipped'] as $skipped) {
+            $this->stderr("skipped outlet $skipped\n", Console::FG_RED);
+        }
+
+        return $result['skipped'] ? ExitCode::UNSPECIFIED_ERROR : ExitCode::OK;
     }
 
     /**
@@ -72,13 +77,17 @@ class PriceListController extends Controller
      */
     public function actionOutlets(): int
     {
-        foreach (ProductHistory::$plugin->getPriceList()->outlets() as $outlet) {
+        $priceList = ProductHistory::$plugin->getPriceList();
+        foreach ($priceList->outlets() as $outlet) {
             $location = $outlet->inventoryLocationId ? "location #{$outlet->inventoryLocationId}" : 'web stock';
             $this->stdout(str_pad($outlet->code, 20) . ' ' . $outlet->displayName() . ", $location\n");
             $this->stdout('  ' . $outlet->prefix() . "_N_YYYYMMDD_HHMMSS.csv\n", Console::FG_GREY);
         }
+        foreach ($priceList->skippedOutlets as $skipped) {
+            $this->stderr("skipped $skipped\n", Console::FG_RED);
+        }
 
-        return ExitCode::OK;
+        return $priceList->skippedOutlets ? ExitCode::UNSPECIFIED_ERROR : ExitCode::OK;
     }
 
     /**

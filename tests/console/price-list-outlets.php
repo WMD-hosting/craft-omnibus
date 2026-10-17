@@ -112,9 +112,11 @@ Event::on(PriceListService::class, PriceListService::EVENT_DEFINE_ROW, function(
 $codes = array_map(fn($o) => $o->code, $plugin->getPriceList()->outlets());
 $check(in_array('test-store', $codes, true), 'registered outlet is listed');
 $check(count($codes) === count(array_unique(array_map(fn($o) => $o->prefix(), $plugin->getPriceList()->outlets()))), 'duplicate prefix skipped (' . implode(', ', $codes) . ')');
+$check(count($plugin->getPriceList()->skippedOutlets) === 1, 'the skip is reported (' . implode('; ', $plugin->getPriceList()->skippedOutlets) . ')');
 
 $result = $plugin->getPriceList()->publish();
 $check(count($result['files']) === count($codes), 'one file pair per outlet (' . count($result['files']) . ')');
+$check(count($result['skipped']) === 1, 'publish() returns the skipped outlet');
 $mine = array_values(array_filter($result['files'], fn($f) => $f['code'] === 'test-store'))[0] ?? null;
 $check($mine !== null && is_file($mine['csv']) && is_file($mine['xml']), 'test store CSV and XML written');
 $check(str_starts_with(basename($mine['csv']), 'prodavaonica_subiceva-1-djakovo_test-store_1_' . date('Ymd') . '_'), 'file name per čl. VI, ASCII (' . basename($mine['csv']) . ')');
@@ -137,10 +139,11 @@ $stock = (new Query())
 $wrong = 0;
 $differs = 0;
 $webBySku = array_column($web, null, 'sifra');
+$purchasables = craft\commerce\Plugin::getInstance()->getPurchasables();
 foreach (Variant::find()->sku(array_keys($rows))->status(null)->all() as $variant) {
-    $expected = !$variant->inventoryTracked
-        ? $webBySku[$variant->sku]['dostupnost']
-        : (($variant->availableForPurchase && ($stock[$variant->id] ?? 0) > 0) ? 'dostupno' : 'nedostupno');
+    // The store narrows the web's answer for variants sold only from stock.
+    $stockBound = $variant->inventoryTracked && !$purchasables->isPurchasableOutOfStockPurchasingAllowed($variant);
+    $expected = $stockBound && ($stock[$variant->id] ?? 0) < 1 ? 'nedostupno' : $webBySku[$variant->sku]['dostupnost'];
     $wrong += $rows[$variant->sku]['dostupnost'] === $expected ? 0 : 1;
     $differs += $rows[$variant->sku]['dostupnost'] !== $webBySku[$variant->sku]['dostupnost'] ? 1 : 0;
 }

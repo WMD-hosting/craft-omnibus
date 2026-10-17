@@ -10,6 +10,7 @@ use craft\commerce\db\Table as CommerceTable;
 use craft\commerce\elements\Product;
 use craft\commerce\elements\Variant;
 use craft\commerce\enums\InventoryTransactionType;
+use craft\commerce\Plugin as Commerce;
 use craft\db\Query;
 use craft\helpers\FileHelper;
 use craft\web\View;
@@ -50,6 +51,15 @@ class PriceListService extends Component
      */
     public const EVENT_DEFINE_ROW = 'defineRow';
 
+    /**
+     * @var string[] Outlets the last outlets() call skipped, with the reason.
+     * @since 1.2.0
+     */
+    public array $skippedOutlets = [];
+
+    /** @var list<PriceListOutlet>|null Outlets of the publish() run in progress. */
+    private ?array $_runOutlets = null;
+
     /** Column order per čl. III of the decision. */
     public const COLUMNS = [
         'naziv',
@@ -74,6 +84,10 @@ class PriceListService extends Component
      */
     public function outlets(): array
     {
+        if ($this->_runOutlets !== null) {
+            return $this->_runOutlets;
+        }
+
         $settings = ProductHistory::$plugin->getSettings();
         $outlets = [new PriceListOutlet([
             'code' => $settings->storeCode,
@@ -89,17 +103,17 @@ class PriceListService extends Component
         }
 
         $unique = [];
+        $this->skippedOutlets = [];
         foreach ($outlets as $outlet) {
-            if (!$outlet->validate()) {
-                Craft::warning("Skipped invalid price-list outlet \"{$outlet->code}\": " . implode(' ', $outlet->getErrorSummary(true)), __METHOD__);
+            $reason = !$outlet->validate()
+                ? implode(' ', $outlet->getErrorSummary(true))
+                : (isset($unique[$outlet->prefix()]) ? "file prefix {$outlet->prefix()} is taken" : null);
+            if ($reason !== null) {
+                $this->skippedOutlets[] = "\"{$outlet->code}\": $reason";
+                Craft::warning("Skipped price-list outlet \"{$outlet->code}\": $reason", __METHOD__);
                 continue;
             }
-            $prefix = $outlet->prefix();
-            if (isset($unique[$prefix])) {
-                Craft::warning("Skipped price-list outlet \"{$outlet->code}\": file prefix $prefix is taken.", __METHOD__);
-                continue;
-            }
-            $unique[$prefix] = $outlet;
+            $unique[$outlet->prefix()] = $outlet;
         }
 
         return array_values($unique);
@@ -141,7 +155,7 @@ class PriceListService extends Component
      * `$outletCode`), prunes files older than the retention period and
      * rewrites the index.
      *
-     * @return array{files: list<array{code: string, name: string, csv: string, xml: string, rows: int}>, index: string, pruned: int}
+     * @return array{files: list<array{code: string, name: string, csv: string, xml: string, rows: int}>, index: string, pruned: int, skipped: string[]}
      */
     public function publish(?string $outletCode = null): array
     {
@@ -149,33 +163,40 @@ class PriceListService extends Component
         $dir = Craft::getAlias($settings->priceListPath);
         FileHelper::createDirectory($dir);
 
-        $outlets = $this->outlets();
-        if ($outletCode !== null) {
-            $outlets = array_values(array_filter($outlets, static fn(PriceListOutlet $o) => $o->code === $outletCode));
-            if ($outlets === []) {
-                throw new InvalidArgumentException("No price-list outlet has the code \"$outletCode\".");
+        // Handlers of EVENT_REGISTER_OUTLETS run once per run, not per file and index.
+        $this->_runOutlets = null;
+        $this->_runOutlets = $outlets = $this->outlets();
+
+        try {
+            if ($outletCode !== null) {
+                $outlets = array_values(array_filter($outlets, static fn(PriceListOutlet $o) => $o->code === $outletCode));
+                if ($outlets === []) {
+                    throw new InvalidArgumentException("No price-list outlet has the code \"$outletCode\".");
+                }
             }
+
+            // One read of the catalogue and one timestamp for the whole run.
+            $base = $this->baseRows();
+            $stamp = new DateTime('now', new DateTimeZone(Craft::$app->getTimeZone()));
+            $written = [];
+
+            foreach ($outlets as $outlet) {
+                $rows = $this->outletRows($base, $outlet);
+                $name = PriceListFiles::base($outlet->prefix(), $stamp, glob("$dir/*.csv") ?: []);
+                $csvPath = "$dir/$name.csv";
+                $xmlPath = "$dir/$name.xml";
+                FileHelper::writeToFile($csvPath, $this->csv($rows, $settings->csvDelimiter));
+                FileHelper::writeToFile($xmlPath, $this->xml($rows, $stamp, $outlet));
+                $written[] = ['code' => $outlet->code, 'name' => $outlet->displayName(), 'csv' => $csvPath, 'xml' => $xmlPath, 'rows' => count($rows)];
+            }
+
+            $pruned = $this->prune($dir, $settings->retentionDays);
+            $indexPath = $this->writeIndex($dir);
+        } finally {
+            $this->_runOutlets = null;
         }
 
-        // One read of the catalogue and one timestamp for the whole run.
-        $base = $this->baseRows();
-        $stamp = new DateTime('now', new DateTimeZone(Craft::$app->getTimeZone()));
-        $written = [];
-
-        foreach ($outlets as $outlet) {
-            $rows = $this->outletRows($base, $outlet);
-            $name = PriceListFiles::base($outlet->prefix(), $stamp, glob("$dir/*.csv") ?: []);
-            $csvPath = "$dir/$name.csv";
-            $xmlPath = "$dir/$name.xml";
-            FileHelper::writeToFile($csvPath, $this->csv($rows, $settings->csvDelimiter));
-            FileHelper::writeToFile($xmlPath, $this->xml($rows, $stamp, $outlet));
-            $written[] = ['code' => $outlet->code, 'name' => $outlet->displayName(), 'csv' => $csvPath, 'xml' => $xmlPath, 'rows' => count($rows)];
-        }
-
-        $pruned = $this->prune($dir, $settings->retentionDays);
-        $indexPath = $this->writeIndex($dir);
-
-        return ['files' => $written, 'index' => $indexPath, 'pruned' => $pruned];
+        return ['files' => $written, 'index' => $indexPath, 'pruned' => $pruned, 'skipped' => $this->skippedOutlets];
     }
 
     /**
@@ -212,12 +233,13 @@ class PriceListService extends Component
     /**
      * The outlet-independent part of every row, read once per run.
      *
-     * @return list<array{variantId: int, tracked: bool, forSale: bool, row: array<string, string>}>
+     * @return list<array{variantId: int, stockBound: bool, row: array<string, string>}>
      */
     private function baseRows(): array
     {
         $settings = ProductHistory::$plugin->getSettings();
         $anchor = ProductHistory::$plugin->getAnchor();
+        $purchasables = Commerce::getInstance()->getPurchasables();
 
         $rows = [];
         // Prices are the current Commerce store's.
@@ -239,8 +261,8 @@ class PriceListService extends Component
 
             $rows[] = [
                 'variantId' => (int)$variant->id,
-                'tracked' => (bool)$variant->inventoryTracked,
-                'forSale' => (bool)$variant->availableForPurchase,
+                // Stock-tracked and not sellable without stock: a store's own stock decides.
+                'stockBound' => $variant->inventoryTracked && !$purchasables->isPurchasableOutOfStockPurchasingAllowed($variant),
                 'row' => [
                     'naziv' => $this->variantName($product, $variant),
                     'sifra' => (string)$variant->sku,
@@ -260,11 +282,11 @@ class PriceListService extends Component
     }
 
     /**
-     * One outlet's rows: the web prices, availability from the outlet's own
-     * inventory location for variants that track stock, then the handlers of
-     * EVENT_DEFINE_ROW.
+     * One outlet's rows: the web prices; a variant the web sells only from
+     * stock is `nedostupno` where the outlet's inventory location has none;
+     * then the handlers of EVENT_DEFINE_ROW.
      *
-     * @param list<array{variantId: int, tracked: bool, forSale: bool, row: array<string, string>}> $base
+     * @param list<array{variantId: int, stockBound: bool, row: array<string, string>}> $base
      * @return list<array<string, string>>
      */
     private function outletRows(array $base, PriceListOutlet $outlet): array
@@ -275,8 +297,9 @@ class PriceListService extends Component
         $rows = [];
         foreach ($base as $item) {
             $row = $item['row'];
-            if ($stock !== null && $item['tracked']) {
-                $row['dostupnost'] = $item['forSale'] && ($stock[$item['variantId']] ?? 0) > 0 ? 'dostupno' : 'nedostupno';
+            // Only ever narrows the web's answer: what the web cannot sell, no store sells either.
+            if ($stock !== null && $item['stockBound'] && $row['dostupnost'] === 'dostupno' && ($stock[$item['variantId']] ?? 0) < 1) {
+                $row['dostupnost'] = 'nedostupno';
             }
 
             if ($hasHandlers) {
@@ -366,6 +389,17 @@ class PriceListService extends Component
     // =========================================================================
     // Files
     // =========================================================================
+
+    /**
+     * @deprecated in 1.2.0. Names now depend on the outlet; use PriceListFiles::base().
+     */
+    public function fileBase(DateTime $stamp, string $dir): string
+    {
+        $outlet = $this->outlets()[0] ?? null;
+        $prefix = $outlet?->prefix() ?? PriceListFiles::prefix('', '', '');
+
+        return PriceListFiles::base($prefix, $stamp, glob("$dir/*.csv") ?: []);
+    }
 
     /** Deletes published files older than the retention period. Returns the count. */
     public function prune(string $dir, int $retentionDays): int
