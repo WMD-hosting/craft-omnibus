@@ -7,18 +7,21 @@ namespace wmd\craftproductpricehistory\services;
 use Craft;
 use craft\base\Component;
 use craft\base\ElementInterface;
+use craft\commerce\db\Table as CommerceTable;
 use craft\commerce\elements\Product;
 use craft\commerce\elements\Variant;
 use craft\commerce\Plugin as Commerce;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\MoneyHelper;
 use DateTime;
 use DateTimeZone;
 use Money\Money;
 use wmd\craftproductpricehistory\events\DefineAnchorDateEvent;
 use wmd\craftproductpricehistory\helpers\AnchorDateRules;
+use wmd\craftproductpricehistory\helpers\ReductionStart;
 use wmd\craftproductpricehistory\ProductHistory;
 use wmd\craftproductpricehistory\records\ProductPriceHistoryRecord;
 
@@ -198,26 +201,23 @@ class AnchorService extends Component
     // =========================================================================
 
     /**
-     * Lowest recorded price in the window before `$saleStart` (default: now),
-     * falling back to the price in force at the window start.
+     * Lowest recorded price in the window before `$saleStart`, falling back to
+     * the price in force at the window start. Without `$saleStart` the window
+     * closes where the reduction started: the history row that lowered the
+     * price, or for a promotional / catalog price the start of its pricing
+     * rule (else now), so the latest recorded price still counts. Pass the
+     * Variant when you have it: the id alone costs a variant query.
      */
-    public function getVariantLowestBefore(int $variantId, ?DateTime $saleStart = null, ?int $days = null): ?float
+    public function getVariantLowestBefore(int|Variant $variant, ?DateTime $saleStart = null, ?int $days = null): ?float
     {
         $days ??= ProductHistory::$plugin->getSettings()->lowestPriceDays;
+        $variantId = $variant instanceof Variant ? (int)$variant->id : $variant;
+        $utc = new DateTimeZone('UTC');
 
-        // The reduction "starts" when the current price was recorded, so by
-        // default the window closes at the latest history row, exclusive:
-        // the reduced price itself never counts as its own reference.
-        if ($saleStart === null) {
-            $latest = (new Query())
-                ->from(ProductPriceHistoryRecord::tableName())
-                ->select(['dateChanged'])
-                ->where(['variantId' => $variantId])
-                ->orderBy(['dateChanged' => SORT_DESC, 'id' => SORT_DESC])
-                ->scalar();
-            $saleStart = $latest ? new DateTime($latest) : new DateTime();
-        }
-        $end = clone $saleStart;
+        // The reduced price itself never counts as its own reference: the
+        // window closes at the reduction's start, exclusive.
+        $saleStart ??= $this->reductionStart($variant, $utc);
+        $end = (clone $saleStart)->setTimezone($utc);
         $start = (clone $end)->modify("-{$days} days");
 
         $lowest = (new Query())
@@ -425,6 +425,65 @@ class AnchorService extends Component
 
         /** @var Variant|null */
         return Variant::find()->id($variant)->status(null)->one();
+    }
+
+    /**
+     * When the reduction the variant is on started (see ReductionStart), in UTC.
+     */
+    private function reductionStart(int|Variant $variant, DateTimeZone $utc): DateTime
+    {
+        $variantId = $variant instanceof Variant ? (int)$variant->id : $variant;
+        $rows = array_map(static fn(array $row) => [
+            'price' => (float)$row['price'],
+            'date' => new DateTime($row['dateChanged'], $utc),
+        ], (new Query())
+            ->from(ProductPriceHistoryRecord::tableName())
+            ->select(['price', 'dateChanged'])
+            ->where(['variantId' => $variantId])
+            ->orderBy(['dateChanged' => SORT_DESC, 'id' => SORT_DESC])
+            ->limit(2)
+            ->all());
+        $now = new DateTime('now', $utc);
+        if ($rows === []) {
+            return $now;
+        }
+
+        $element = $this->variant($variant);
+        $salePrice = $element?->getSalePrice();
+        $promotionStart = null;
+        if ($element !== null && $salePrice !== null && $salePrice < $rows[0]['price']) {
+            $promotionStart = ReductionStart::promotionStart($this->catalogPrices($element, $utc), $salePrice);
+        }
+
+        return ReductionStart::resolve($rows, $salePrice, $promotionStart, $now);
+    }
+
+    /**
+     * The variant's active catalog prices in its store, for guests: rows of
+     * rules with a customer condition (catalogpricingrules_users) are left
+     * out, as on the price list.
+     *
+     * @return list<array{price: float, dateFrom: DateTime|null}>
+     */
+    private function catalogPrices(Variant $variant, DateTimeZone $utc): array
+    {
+        $now = Db::prepareDateForDb(new DateTime());
+        $rows = (new Query())
+            ->select(['price', 'dateFrom'])
+            ->from(CommerceTable::CATALOG_PRICING)
+            ->where(['purchasableId' => $variant->id, 'storeId' => $variant->getStoreId(), 'userId' => null])
+            ->andWhere(['or', ['catalogPricingRuleId' => null], ['not in', 'catalogPricingRuleId', (new Query())
+                ->select(['catalogPricingRuleId'])
+                ->from(CommerceTable::CATALOG_PRICING_RULES_USERS)
+                ->where(['not', ['catalogPricingRuleId' => null]]), ]])
+            ->andWhere(['or', ['dateFrom' => null], ['<=', 'dateFrom', $now]])
+            ->andWhere(['or', ['dateTo' => null], ['>=', 'dateTo', $now]])
+            ->all();
+
+        return array_map(static fn(array $row) => [
+            'price' => (float)$row['price'],
+            'dateFrom' => $row['dateFrom'] !== null ? new DateTime($row['dateFrom'], $utc) : null,
+        ], $rows);
     }
 
     /**

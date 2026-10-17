@@ -141,8 +141,9 @@ returns `{ price, date, source }` where `date` is the variant's reference day
 (or its first listing) and `source` is `anchorDate`, `firstListing` or
 `override`. `anchorDate(variant)` gives a variant's reference day,
 `anchorDate()` the default one. `lowestBefore(variant, saleStart = null, days = null)` closes
-the window at `saleStart`, by default the moment the current price was
-recorded.
+the window at `saleStart`, by default where the reduction started: the history
+row that lowered the price, or, for a promotional price or catalog pricing rule
+(the history records base prices only), the rule's start date, else now.
 
 The original API stays: `getVariantLowestPrice(id, days, fallback)` and
 `getProductLowestPrice(id, days, fallback)`.
