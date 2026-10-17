@@ -1,6 +1,6 @@
 # Release Notes for Omnibus, Price History and Anchor Price
 
-## 1.3.0 - Unreleased
+## 1.3.0 - 2026-10-17
 
 ### Added
 - A reference day per product: the `anchorDateRules` setting (CP table or `config/omnibus.php`) gives product types, or products related to a category or entry (subcategories included), another day than `anchorDate`, for the 2.5.2025 of food, drink, cosmetics, cleaning, toiletries and household goods (NN 101/2026-1212 t. IV; draft Pravilnik o isticanju bazne cijene, čl. 3(1)). `AnchorService::EVENT_DEFINE_ANCHOR_DATE` decides it in code. `AnchorService::anchorDateFor()`, `anchorDayFor()` and `anchorDates()`.
