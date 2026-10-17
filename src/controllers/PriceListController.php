@@ -22,23 +22,11 @@ class PriceListController extends Controller
     public function actionIndex(): Response
     {
         $settings = ProductHistory::$plugin->getSettings();
+        $priceList = ProductHistory::$plugin->getPriceList();
         $dir = Craft::getAlias($settings->priceListPath);
-        $files = is_dir($dir) ? (glob("$dir/*.{csv,xml}", GLOB_BRACE) ?: []) : [];
-        usort($files, static fn($a, $b) => filemtime($b) <=> filemtime($a));
-
         $baseUrl = rtrim(str_replace(Craft::getAlias('@webroot'), Craft::getAlias('@web'), $dir), '/');
-        $rows = array_map(static fn(string $file) => [
-            'name' => basename($file),
-            'url' => $baseUrl . '/' . basename($file),
-            'size' => filesize($file),
-            'date' => date('Y-m-d H:i', filemtime($file)),
-        ], $files);
 
-        $html = Craft::$app->getView()->renderTemplate('omnibus/_price-list', [
-            'files' => $rows,
-            'anchorDate' => $settings->anchorDate,
-            'retentionDays' => $settings->retentionDays,
-        ], Craft::$app->getView()::TEMPLATE_MODE_CP);
+        $html = $priceList->renderIndex($priceList->publishedFiles($dir, $baseUrl));
 
         $this->response->getHeaders()->set('Content-Type', 'text/html; charset=UTF-8')->set('X-Robots-Tag', 'index, follow');
 

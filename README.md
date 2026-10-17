@@ -90,8 +90,9 @@ The original API stays: `getVariantLowestPrice(id, days, fallback)` and
 ## Price list
 
 ```sh
-php craft omnibus/price-list/publish   # write today's CSV + XML, prune, rebuild the index
+php craft omnibus/price-list/publish   # write today's CSV + XML per outlet, prune, rebuild the index
 php craft omnibus/price-list/preview   # print the first rows, write nothing
+php craft omnibus/price-list/outlets   # list the outlets and their file names
 ```
 
 Run `publish` from cron every day before 08:00 local time:
@@ -103,9 +104,56 @@ Run `publish` from cron every day before 08:00 local time:
 Columns, in the order of čl. III: `naziv`, `sifra`, `marka`, `jedinica_mjere`,
 `cijena_za_jedinicu_mjere`, `maloprodajna_cijena`, `posebni_oblik_prodaje`
 (DA/NE), `sidrena_cijena`, `barkod`, `dostupnost`. File name per čl. VI:
-`{oblik}_{adresa}_{oznaka}_{broj-pohrane}_{YYYYMMDD_HHMMSS}.csv|xml`. The
+`{oblik}_{adresa}_{oznaka}_{broj-pohrane}_{YYYYMMDD_HHMMSS}.csv|xml`, the
+outlet parts ASCII and kebab-cased; `broj pohrane` counts the outlet's runs
+that day. The
 decision does not prescribe column names or an XSD; adjust if the Ministry
 publishes a technical specification.
+
+### One file per store
+
+The settings describe one outlet, the web shop. A retailer with physical
+stores publishes a file per store ("prodajni objekt") every day; the site adds
+them from a module or plugin:
+
+```php
+use wmd\craftproductpricehistory\events\RegisterPriceListOutletsEvent;
+use wmd\craftproductpricehistory\models\PriceListOutlet;
+use wmd\craftproductpricehistory\services\PriceListService;
+use yii\base\Event;
+
+Event::on(PriceListService::class, PriceListService::EVENT_REGISTER_OUTLETS, function(RegisterPriceListOutletsEvent $event) {
+    $event->outlets[] = new PriceListOutlet([
+        'code' => 'zagreb-ilica',           // oznaka, unique
+        'type' => 'prodavaonica',           // oblik
+        'address' => 'Ilica 42, Zagreb',    // adresa
+        'name' => 'Trgovina Zagreb, Ilica', // shown on the index
+        'inventoryLocationId' => 14,        // stock that decides "dostupnost"
+    ]);
+});
+```
+
+Each outlet's file has the web prices. With `inventoryLocationId`, a variant
+the web sells only from stock is `nedostupno` when that location has none;
+otherwise, and without a location, availability is the web shop's. An outlet
+that is invalid or repeats another's file name is skipped, and `publish`
+exits with an error. A store with its own prices, or
+one that does not carry a product, changes the row:
+
+```php
+use wmd\craftproductpricehistory\events\DefinePriceListRowEvent;
+
+Event::on(PriceListService::class, PriceListService::EVENT_DEFINE_ROW, function(DefinePriceListRowEvent $event) {
+    if ($event->outlet->code === 'zagreb-ilica' && $event->row['sifra'] === 'ABC-1') {
+        $event->row['maloprodajna_cijena'] = '19.90';
+        // $event->row = null; leaves the product out of this store's file
+    }
+});
+```
+
+The index (`priceListRoute` and `index.html` next to the files) lists the
+files by day, newest first, then by outlet. Files of a store that is no longer
+registered stay listed under their code until retention removes them.
 
 ## Console
 
@@ -113,8 +161,9 @@ publishes a technical specification.
 |---|---|
 | `anchor/backfill [--as-of=Y-m-d] [--store=id]` | record the current price for variants with no history |
 | `anchor/show <variantId>` | print the anchor and the lowest price before now |
-| `price-list/publish [--store=id]` | write, prune, index |
-| `price-list/preview` | print rows |
+| `price-list/publish [--outlet=code]` | write every outlet (or one), prune, index |
+| `price-list/preview [--outlet=code]` | print rows of the web shop (or one outlet) |
+| `price-list/outlets` | list outlets, their stock location and file prefix |
 
 ## Legal references
 

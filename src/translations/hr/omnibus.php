@@ -41,5 +41,6 @@ return [
     'Size' => 'Veličina',
     'The price list has not been published yet.' => 'Cjenik još nije objavljen.',
     'Anchor price' => 'Sidrena cijena',
+    'Online store' => 'Internetska trgovina',
     'Published under the Decision on publishing price lists of products and services (NN 101/2026). Files stay available for {days} days after publication.' => 'Objavljeno prema Odluci o objavi cjenika proizvoda i usluga (NN 101/2026). Datoteke ostaju dostupne {days} dana od objave.',
 ];
