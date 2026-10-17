@@ -1,5 +1,20 @@
 # Release Notes for Omnibus, Price History and Anchor Price
 
+## 1.2.0 - 2026-10-17
+
+### Added
+- One price-list file per outlet ("prodajni objekt", NN 101/2026): sites with physical stores register them on `PriceListService::EVENT_REGISTER_OUTLETS`, each a `PriceListOutlet` with its own form, address and code in the file name (čl. VI). The web shop from the plugin settings stays the first outlet.
+- An outlet with `inventoryLocationId` publishes `dostupnost` from that location's stock for variants that track inventory.
+- `PriceListService::EVENT_DEFINE_ROW` changes or drops one row of one outlet (a store price, a product the store does not carry).
+- `craft omnibus/price-list/outlets`; `publish` and `preview` take `--outlet=<code>`.
+- The public index groups the files by day, then outlet.
+
+### Changed
+- `PriceListService::publish()` returns `['files' => [...per outlet], 'index', 'pruned']`, `rows()` takes a `PriceListOutlet`, and `xml()` takes the outlet as a third argument.
+- `broj pohrane` counts runs per outlet and day (it counted every file of the day).
+- File-name parts are transliterated to ASCII (`Šubićeva` becomes `subiceva`).
+- The `--store` option of `price-list/publish` is deprecated and ignored; it never changed the prices.
+
 ## 1.1.6 - 2026-10-13
 
 ### Changed
