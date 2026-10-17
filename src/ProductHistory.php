@@ -70,8 +70,17 @@ class ProductHistory extends Plugin
      */
     protected function settingsHtml(): ?string
     {
+        $settings = $this->getSettings();
+        // The table edits comma-separated text; config/omnibus.php may hold arrays.
+        $rows = array_map(static fn(array $rule) => [
+            'date' => $rule['date'],
+            'productTypes' => implode(', ', $rule['productTypes']),
+            'relatedTo' => implode(', ', $rule['relatedTo']),
+        ], $settings->getAnchorDateRules());
+
         return Craft::$app->getView()->renderTemplate('omnibus/_settings', [
-            'settings' => $this->getSettings(),
+            'settings' => $settings,
+            'anchorDateRows' => $rows,
         ]);
     }
 

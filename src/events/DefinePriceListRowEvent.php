@@ -20,6 +20,10 @@ class DefinePriceListRowEvent extends Event
 
     public int $variantId;
 
-    /** @var array<string, string>|null Columns of PriceListService::COLUMNS. */
+    /**
+     * @var array<string, string>|null Columns of PriceListService::COLUMNS, plus
+     * PriceListService::ROW_ANCHOR_DATE (the day of `sidrena_cijena`, since 1.3.0).
+     * Change values in place; a row rebuilt from COLUMNS alone loses that day.
+     */
     public ?array $row = null;
 }

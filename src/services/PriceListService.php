@@ -12,6 +12,7 @@ use craft\commerce\elements\Variant;
 use craft\commerce\enums\InventoryTransactionType;
 use craft\commerce\Plugin as Commerce;
 use craft\db\Query;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\web\View;
 use DateTime;
@@ -20,6 +21,7 @@ use InvalidArgumentException;
 use wmd\craftproductpricehistory\events\DefinePriceListRowEvent;
 use wmd\craftproductpricehistory\events\RegisterPriceListOutletsEvent;
 use wmd\craftproductpricehistory\helpers\PriceListFiles;
+use wmd\craftproductpricehistory\helpers\SaleNames;
 use wmd\craftproductpricehistory\models\PriceListOutlet;
 use wmd\craftproductpricehistory\ProductHistory;
 
@@ -60,19 +62,34 @@ class PriceListService extends Component
     /** @var list<PriceListOutlet>|null Outlets of the publish() run in progress. */
     private ?array $_runOutlets = null;
 
-    /** Column order per čl. III of the decision. */
+    /**
+     * Column order per čl. III of the decision. `neto_kolicina` (1.3.0) is
+     * from the draft Pravilnik o načinu objave cjenika (čl. 3(2)),
+     * `naziv_posebnog_oblika_prodaje` (1.3.0) from čl. III's "i nazivom tog
+     * posebnog oblika prodaje". Readers should go by the header, not the position.
+     */
     public const COLUMNS = [
         'naziv',
         'sifra',
         'marka',
+        'neto_kolicina',
         'jedinica_mjere',
         'cijena_za_jedinicu_mjere',
         'maloprodajna_cijena',
         'posebni_oblik_prodaje',
+        'naziv_posebnog_oblika_prodaje',
         'sidrena_cijena',
         'barkod',
         'dostupnost',
     ];
+
+    /**
+     * Row key (not a column) holding the Y-m-d day the row's `sidrena_cijena`
+     * refers to; the XML writes it as the `sidreni_datum` attribute of each
+     * `proizvod`. Handlers of EVENT_DEFINE_ROW may change it with the price.
+     * @since 1.3.0
+     */
+    public const ROW_ANCHOR_DATE = 'sidreni_datum';
 
     /**
      * The outlets, web shop first unless a handler moved or removed it. An
@@ -247,6 +264,8 @@ class PriceListService extends Component
         $settings = ProductHistory::$plugin->getSettings();
         $anchor = ProductHistory::$plugin->getAnchor();
         $purchasables = Commerce::getInstance()->getPurchasables();
+        $catalogPrices = $this->catalogPrices();
+        $defaultSaleName = $settings->saleName ?: Craft::t('omnibus', 'Price reduction');
 
         $rows = [];
         // Prices are the current Commerce store's.
@@ -261,10 +280,11 @@ class PriceListService extends Component
                 continue;
             }
 
-            $anchorRow = $anchor->getVariantAnchor($variant->id);
+            $anchorRow = $anchor->getVariantAnchor($variant);
             $salePrice = (float)$variant->salePrice;
             $basePrice = (float)$variant->basePrice;
             $onSale = $variant->getOnPromotion() || $salePrice < $basePrice;
+            $saleName = $onSale ? (SaleNames::pick($catalogPrices[(int)$variant->id] ?? [], $salePrice) ?? $defaultSaleName) : '';
 
             $rows[] = [
                 'variantId' => (int)$variant->id,
@@ -274,13 +294,16 @@ class PriceListService extends Component
                     'naziv' => $this->variantName($product, $variant),
                     'sifra' => (string)$variant->sku,
                     'marka' => $this->fieldText($product, $settings->brandField),
+                    'neto_kolicina' => $this->fieldText($variant, $settings->netQuantityField) ?: $this->fieldText($product, $settings->netQuantityField),
                     'jedinica_mjere' => $this->fieldText($variant, $settings->unitField) ?: $this->fieldText($product, $settings->unitField),
                     'cijena_za_jedinicu_mjere' => $this->fieldText($variant, $settings->unitPriceField) ?: $this->fieldText($product, $settings->unitPriceField),
                     'maloprodajna_cijena' => $this->money($salePrice),
                     'posebni_oblik_prodaje' => $onSale ? 'DA' : 'NE',
+                    'naziv_posebnog_oblika_prodaje' => $saleName,
                     'sidrena_cijena' => $anchorRow ? $this->money($anchorRow['price']) : '',
                     'barkod' => $this->fieldText($variant, $settings->barcodeField) ?: $this->fieldText($product, $settings->barcodeField),
                     'dostupnost' => ($variant->availableForPurchase && $variant->getIsAvailable()) ? 'dostupno' : 'nedostupno',
+                    self::ROW_ANCHOR_DATE => $anchorRow ? $anchorRow['date']->format('Y-m-d') : '',
                 ],
             ];
         }
@@ -322,6 +345,55 @@ class PriceListService extends Component
         }
 
         return $rows;
+    }
+
+    /**
+     * The active catalog prices that come from a pricing rule, per variant, in
+     * the current store, for guests. Rules with a customer condition (Commerce
+     * lists their customers in catalogpricingrules_users) are left out:
+     * customer-group and personal prices are not a published special sale
+     * (draft Pravilnik o načinu objave cjenika, čl. 4(2)).
+     *
+     * @return array<int, list<array{price: float, promotional: bool, name: string}>>
+     */
+    private function catalogPrices(): array
+    {
+        $now = Db::prepareDateForDb(new DateTime());
+        $storeId = Commerce::getInstance()->getStores()->getCurrentStore()->id;
+        $names = (new Query())
+            ->select(['name', 'id'])
+            ->from(CommerceTable::CATALOG_PRICING_RULES)
+            ->where(['storeId' => $storeId])
+            ->indexBy('id')
+            ->column();
+        if ($names === []) {
+            return [];
+        }
+
+        // Only rows that can be a sale price: promotional, or below the base price.
+        $query = (new Query())
+            ->select(['cp.purchasableId', 'cp.price', 'cp.isPromotionalPrice', 'cp.catalogPricingRuleId'])
+            ->from(['cp' => CommerceTable::CATALOG_PRICING])
+            ->innerJoin(['ps' => CommerceTable::PURCHASABLES_STORES], '[[ps.purchasableId]] = [[cp.purchasableId]] AND [[ps.storeId]] = [[cp.storeId]]')
+            ->where(['cp.storeId' => $storeId, 'cp.userId' => null])
+            ->andWhere(['not', ['cp.catalogPricingRuleId' => null]])
+            ->andWhere(['or', ['cp.isPromotionalPrice' => true], '[[cp.price]] < [[ps.basePrice]]'])
+            ->andWhere(['not in', 'cp.catalogPricingRuleId', (new Query())
+                ->select(['catalogPricingRuleId'])
+                ->from(CommerceTable::CATALOG_PRICING_RULES_USERS)
+                ->where(['not', ['catalogPricingRuleId' => null]]), ])
+            ->andWhere(['or', ['cp.dateFrom' => null], ['<=', 'cp.dateFrom', $now]])
+            ->andWhere(['or', ['cp.dateTo' => null], ['>=', 'cp.dateTo', $now]]);
+
+        $prices = [];
+        foreach ($query->each(1000) as $row) {
+            $prices[(int)$row['purchasableId']][] = [
+                'price' => (float)$row['price'],
+                'promotional' => (bool)$row['isPromotionalPrice'],
+                'name' => (string)($names[$row['catalogPricingRuleId']] ?? ''),
+            ];
+        }
+        return $prices;
     }
 
     /**
@@ -379,11 +451,15 @@ class PriceListService extends Component
         $root->setAttribute('adresa_prodajnog_objekta', $outlet->address);
         $root->setAttribute('oznaka_prodajnog_objekta', $outlet->code);
         $root->setAttribute('datum_objave', $stamp->format(DATE_ATOM));
+        // The default day; a row with another day (by product category, or its first listing) carries its own.
         $root->setAttribute('sidreni_datum', $settings->anchorDate);
         $doc->appendChild($root);
 
         foreach ($rows as $row) {
             $item = $doc->createElement('proizvod');
+            if (($row[self::ROW_ANCHOR_DATE] ?? '') !== '') {
+                $item->setAttribute('sidreni_datum', (string)$row[self::ROW_ANCHOR_DATE]);
+            }
             foreach (self::COLUMNS as $column) {
                 $item->appendChild($doc->createElement($column))->appendChild($doc->createTextNode((string)($row[$column] ?? '')));
             }
@@ -447,6 +523,7 @@ class PriceListService extends Component
         return Craft::$app->getView()->renderTemplate('omnibus/_price-list', [
             'days' => $days,
             'anchorDate' => $settings->anchorDate,
+            'anchorDates' => ProductHistory::$plugin->getAnchor()->anchorDates(),
             'retentionDays' => $settings->retentionDays,
         ], View::TEMPLATE_MODE_CP);
     }

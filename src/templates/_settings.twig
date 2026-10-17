@@ -11,6 +11,33 @@
     errors: settings.getErrors('anchorDate'),
 }) }}
 
+{{ forms.editableTableField({
+    label: 'Other reference days'|t('omnibus'),
+    instructions: 'Products that take another day, first matching row wins. Food, drink, cosmetics, cleaning, toiletries and household goods keep 2 May 2025 (NN 101/2026, t. IV). Match by product type handles or by the IDs of categories or entries the product relates to (subcategories included), separated by commas.'|t('omnibus'),
+    id: 'anchorDateRules',
+    name: 'anchorDateRules',
+    cols: {
+        date: { type: 'singleline', heading: 'Day (Y-m-d)'|t('omnibus'), placeholder: '2025-05-02', width: '20%' },
+        productTypes: { type: 'singleline', heading: 'Product types'|t('omnibus'), placeholder: 'food, drinks' },
+        relatedTo: { type: 'singleline', heading: 'Category or entry IDs'|t('omnibus'), placeholder: '12, 34' },
+    },
+    rows: anchorDateRows,
+    allowAdd: true,
+    allowDelete: true,
+    allowReorder: true,
+    addRowLabel: 'Add a day'|t('omnibus'),
+    errors: settings.getErrors('anchorDateRules'),
+}) }}
+
+{{ forms.textField({
+    label: 'Anchor price override field'|t('omnibus'),
+    instructions: 'Handle of a number or money field on the variant or product. When filled, it is the anchor price, for cases the history cannot compute (a product on sale on the reference day: the lowest price of the 30 days before that sale).'|t('omnibus'),
+    id: 'anchorOverrideField',
+    name: 'anchorOverrideField',
+    value: settings.anchorOverrideField,
+    errors: settings.getErrors('anchorOverrideField'),
+}) }}
+
 {{ forms.textField({
     label: 'Label'|t('omnibus'),
     instructions: 'Printed next to the selling price. Leave empty to use the translated default.'|t('omnibus'),
@@ -87,6 +114,16 @@
 }) }}
 
 {{ forms.textField({
+    label: 'Name of a reduction without a pricing rule'|t('omnibus'),
+    instructions: 'Published as the name of the special form of sale when a promotional price was entered on the variant. Reductions from a catalog pricing rule publish the rule’s name, so name rules as customers see them.'|t('omnibus'),
+    id: 'saleName',
+    name: 'saleName',
+    placeholder: 'Price reduction'|t('omnibus'),
+    value: settings.saleName,
+    errors: settings.getErrors('saleName'),
+}) }}
+
+{{ forms.textField({
     label: 'CSV delimiter'|t('omnibus'),
     id: 'csvDelimiter', name: 'csvDelimiter', size: 2, value: settings.csvDelimiter, errors: settings.getErrors('csvDelimiter'),
 }) }}
@@ -95,6 +132,7 @@
 <p class="light">{{ 'Handles of the fields that feed the optional columns. Leave empty to publish the column blank.'|t('omnibus') }}</p>
 
 {{ forms.textField({ label: 'Brand'|t('omnibus'), id: 'brandField', name: 'brandField', value: settings.brandField }) }}
+{{ forms.textField({ label: 'Net quantity'|t('omnibus'), id: 'netQuantityField', name: 'netQuantityField', value: settings.netQuantityField }) }}
 {{ forms.textField({ label: 'Barcode'|t('omnibus'), id: 'barcodeField', name: 'barcodeField', value: settings.barcodeField }) }}
 {{ forms.textField({ label: 'Unit of measure'|t('omnibus'), id: 'unitField', name: 'unitField', value: settings.unitField }) }}
 {{ forms.textField({ label: 'Price per unit of measure'|t('omnibus'), id: 'unitPriceField', name: 'unitPriceField', value: settings.unitPriceField }) }}

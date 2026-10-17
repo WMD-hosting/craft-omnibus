@@ -9,7 +9,12 @@
 </head>
 <body>
   <h1>{{ 'Product price list'|t('omnibus') }}</h1>
-  <p>{{ 'Published under the Decision on publishing price lists of products and services (NN 101/2026). Files stay available for {days} days after publication. The anchor price refers to {date}.'|t('omnibus', { days: retentionDays, date: anchorDate|date('d.m.Y') }) }}</p>
+  {% set anchorDates = anchorDates ?? [anchorDate] %}
+  {% if anchorDates|length > 1 %}
+    <p>{{ 'Published under the Decision on publishing price lists of products and services (NN 101/2026). Files stay available for {days} days after publication. The anchor price refers to {dates}, depending on the product; each product in the XML file names its day.'|t('omnibus', { days: retentionDays, dates: anchorDates|map(d => d|date('d.m.Y'))|join(', ') }) }}</p>
+  {% else %}
+    <p>{{ 'Published under the Decision on publishing price lists of products and services (NN 101/2026). Files stay available for {days} days after publication. The anchor price refers to {date}.'|t('omnibus', { days: retentionDays, date: anchorDate|date('d.m.Y') }) }}</p>
+  {% endif %}
   {% for day in days %}
     <section>
       <h2><time datetime="{{ day.date }}">{{ day.date|date('d.m.Y') }}</time></h2>
