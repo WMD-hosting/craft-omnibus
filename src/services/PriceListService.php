@@ -163,11 +163,17 @@ class PriceListService extends Component
         $dir = Craft::getAlias($settings->priceListPath);
         FileHelper::createDirectory($dir);
 
-        // Handlers of EVENT_REGISTER_OUTLETS run once per run, not per file and index.
-        $this->_runOutlets = null;
-        $this->_runOutlets = $outlets = $this->outlets();
+        // Cron runs in the console's language; the index and outlet names are the site's.
+        $language = Craft::$app->language;
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            Craft::$app->language = Craft::$app->getSites()->getPrimarySite()->language;
+        }
 
         try {
+            // Handlers of EVENT_REGISTER_OUTLETS run once per run, not per file and index.
+            $this->_runOutlets = null;
+            $this->_runOutlets = $outlets = $this->outlets();
+
             if ($outletCode !== null) {
                 $outlets = array_values(array_filter($outlets, static fn(PriceListOutlet $o) => $o->code === $outletCode));
                 if ($outlets === []) {
@@ -194,6 +200,7 @@ class PriceListService extends Component
             $indexPath = $this->writeIndex($dir);
         } finally {
             $this->_runOutlets = null;
+            Craft::$app->language = $language;
         }
 
         return ['files' => $written, 'index' => $indexPath, 'pruned' => $pruned, 'skipped' => $this->skippedOutlets];

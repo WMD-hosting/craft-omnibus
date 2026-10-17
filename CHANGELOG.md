@@ -1,5 +1,10 @@
 # Release Notes for Omnibus, Price History and Anchor Price
 
+## 1.2.1 - 2026-10-17
+
+### Fixed
+- `price-list/publish` writes `index.html` and the web shop's name in the primary site's language. From cron it used the console's language (usually English).
+
 ## 1.2.0 - 2026-10-17
 
 ### Added
