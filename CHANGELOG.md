@@ -1,5 +1,14 @@
 # Release Notes for Omnibus, Price History and Anchor Price
 
+## 1.3.1 - 2026-10-17
+
+### Fixed
+- The lowest price before a reduction was empty for every variant on a Commerce promotional price or catalog pricing rule. The history records base prices only, so the latest row (usually the regular price, e.g. a backfill) was taken as the start of the reduction and the window before it was empty. The window now closes at the history row that lowered the price, or, when the selling price is below the latest recorded price, at the start (`dateFrom`) of the active guest catalog price that gives it, else now; the regular price then counts as the price in force.
+- The window is compared in UTC, like the history rows: an explicit `saleStart` in the site's time zone, or the default "now", moved it by the offset.
+
+### Changed
+- `AnchorService::getVariantLowestBefore()` takes a Variant as well as an id (the parameter is now `$variant`; named-argument callers using `variantId:` need updating). The id alone costs a variant query, for the selling price.
+
 ## 1.3.0 - 2026-10-17
 
 ### Added

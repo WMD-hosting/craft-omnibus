@@ -50,13 +50,12 @@ class ProductPriceHistoryVariable
     }
 
     /**
-     * Lowest recorded price in the window before a reduction (default 30 days
-     * before now).
+     * Lowest recorded price in the window (default 30 days) before the
+     * variant's reduction started.
      */
     public function lowestBefore(Variant|int $subject, ?DateTime $saleStart = null, ?int $days = null): ?float
     {
-        $id = $subject instanceof Variant ? $subject->id : $subject;
-        return ProductHistory::$plugin->getAnchor()->getVariantLowestBefore((int)$id, $saleStart, $days);
+        return ProductHistory::$plugin->getAnchor()->getVariantLowestBefore($subject, $saleStart, $days);
     }
 
     // =========================================================================
