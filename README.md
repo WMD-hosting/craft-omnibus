@@ -32,7 +32,8 @@ php craft plugin/install omnibus
 ```
 
 The plugin records a history row whenever a variant's base price changes, and
-the current price when a product is first saved.
+the current price when a variant is first saved (including variants created
+together with their product, as importers do).
 
 ### Installing on a store that already has prices
 

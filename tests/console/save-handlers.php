@@ -5,16 +5,32 @@
  * and a real price change must still be recorded for the canonical variant only.
  *
  * Usage, from any Craft install that has Omnibus and a product type with versioning:
- *   php tests/console/save-handlers.php <craft-root> <productId>
+ *   php tests/console/save-handlers.php <craft-root> <productId> [--src=<plugin src dir>]
  * Everything runs inside a transaction that is rolled back. Exit code 0 = all PASS.
  * Step 4 checks that a variant re-saved through a product draft records its history
  * under the canonical product, step 5 that a variant without a store row never
  * records a 0.00 price.
  */
 
-[$_, $root, $productId] = $argv + [null, null, null];
+$args = array_slice($argv, 1);
+$src = null;
+foreach ($args as $i => $arg) {
+    if (str_starts_with($arg, '--src=')) {
+        $src = realpath(substr($arg, 6)) ?: null;
+        unset($args[$i]);
+    }
+}
+[$root, $productId] = array_values($args) + [null, null];
 chdir($root);
 require $root . '/bootstrap.php';
+if ($src !== null) {
+    spl_autoload_register(function(string $class) use ($src) {
+        $prefix = 'wmd\\craftproductpricehistory\\';
+        if (str_starts_with($class, $prefix) && is_file($file = $src . '/' . strtr(substr($class, strlen($prefix)), '\\', '/') . '.php')) {
+            require $file;
+        }
+    }, true, true);
+}
 /** @var craft\console\Application $app */
 $app = require CRAFT_VENDOR_PATH . '/craftcms/cms/bootstrap/console.php';
 

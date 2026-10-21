@@ -23,6 +23,7 @@ class Install extends Migration
             ]);
 
             $this->addForeignKey(null, '{{%product_price_history}}', 'productId', '{{%commerce_products}}', 'id', 'CASCADE');
+            $this->createIndex(null, '{{%product_price_history}}', ['variantId', 'dateChanged']);
 
             // Refresh the db schema caches
             Craft::$app->db->schema->refresh();
