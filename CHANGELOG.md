@@ -1,5 +1,11 @@
 # Release Notes for Omnibus, Price History and Anchor Price
 
+## 1.3.2 - 2026-10-21
+
+### Fixed
+- A product created together with its variants in one save (any importer) recorded no price history: the first-save handler listened to `Product::EVENT_AFTER_SAVE`, but Commerce 5 saves the variants after it, so they had no ids yet. The first price is now recorded on the variant's own first save, under its primary owner. Drafts, revisions and propagation to other sites are skipped; a variant added in a product draft gets its row when the draft is applied. Variants imported with 1.3.1 or earlier and not saved since have no rows: run `omnibus/anchor/backfill`.
+- `product_price_history` had no index for the per-variant lookups (lowest price in a window, the duplicate check on every save), which scanned the whole table on large catalogues. A migration adds one on (`variantId`, `dateChanged`).
+
 ## 1.3.1 - 2026-10-17
 
 ### Fixed

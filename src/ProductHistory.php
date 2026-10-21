@@ -5,7 +5,6 @@ namespace wmd\craftproductpricehistory;
 use Craft;
 use craft\base\Model;
 use craft\base\Plugin;
-use craft\commerce\elements\Product;
 use craft\commerce\elements\Variant;
 use craft\db\Query;
 use craft\events\ModelEvent;
@@ -32,7 +31,7 @@ class ProductHistory extends Plugin
      */
     public static ProductHistory $plugin;
 
-    public string $schemaVersion = '1.0.0';
+    public string $schemaVersion = '1.0.1';
 
     public bool $hasCpSettings = true;
 
@@ -188,22 +187,30 @@ class ProductHistory extends Plugin
 
         // Handle product price history after save (first-time creation)
         Event::on(
-            Product::class,
-            Product::EVENT_AFTER_SAVE,
+            Variant::class,
+            Variant::EVENT_AFTER_SAVE,
             function(ModelEvent $event) {
-                if ($event->sender->firstSave) {
-                    $product = $event->sender;
+                $variant = $event->sender;
 
-                    // Iterate through product variants
-                    foreach ($product->variants as $variant) {
-                        // Ensure the variant has a valid ID before proceeding
-                        if ($variant->id !== null) {
-                            ProductHistory::$plugin
-                                ->productPriceHistoryService
-                                ->addProductHistoryPrice($product->id, $variant->id, $variant->basePrice);
-                        }
-                    }
+                // Record the first price on the variant's own first save. Commerce 5 saves a
+                // product's variants in Product::afterPropagate(), after Product::EVENT_AFTER_SAVE,
+                // so a product created with its variants in one save (any importer) has no variant
+                // ids there yet. Craft forces firstSave to false for drafts and revisions; an
+                // applied variant draft gets it back. propagating is the same save repeated for
+                // the variant's other sites.
+                if (!$variant->firstSave || $variant->propagating || $variant->getIsDraft() || $variant->getIsRevision()) {
+                    return;
                 }
+
+                // Key to the primary owner, as the before-save handler does
+                $productId = $variant->getPrimaryOwnerId();
+                if (!$productId || $variant->basePrice === null) {
+                    return;
+                }
+
+                ProductHistory::$plugin
+                    ->productPriceHistoryService
+                    ->addProductHistoryPrice($productId, $variant->id, $variant->basePrice);
             }
         );
     }
