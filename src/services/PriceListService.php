@@ -268,8 +268,11 @@ class PriceListService extends Component
         $defaultSaleName = $settings->saleName ?: Craft::t('omnibus', 'Price reduction');
 
         $rows = [];
-        // Prices are the current Commerce store's.
+        // Prices are the current Commerce store's, for a guest: a queue job
+        // run by a web request carries that visitor's identity, and Commerce
+        // prices a query for the signed-in user unless told otherwise.
         $query = Variant::find()
+            ->forCustomer(false)
             ->status(Variant::STATUS_ENABLED)
             ->orderBy('sku');
 
@@ -375,6 +378,7 @@ class PriceListService extends Component
             ->select(['cp.purchasableId', 'cp.price', 'cp.isPromotionalPrice', 'cp.catalogPricingRuleId'])
             ->from(['cp' => CommerceTable::CATALOG_PRICING])
             ->innerJoin(['ps' => CommerceTable::PURCHASABLES_STORES], '[[ps.purchasableId]] = [[cp.purchasableId]] AND [[ps.storeId]] = [[cp.storeId]]')
+            // Commerce 5 never writes userId: the rule's user list is what makes a price a customer's.
             ->where(['cp.storeId' => $storeId, 'cp.userId' => null])
             ->andWhere(['not', ['cp.catalogPricingRuleId' => null]])
             ->andWhere(['or', ['cp.isPromotionalPrice' => true], '[[cp.price]] < [[ps.basePrice]]'])

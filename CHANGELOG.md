@@ -1,5 +1,10 @@
 # Release Notes for Omnibus, Price History and Anchor Price
 
+## 1.3.3 - 2026-10-21
+
+### Fixed
+- The price list and the lowest price before a reduction could carry a customer's own catalog price (a pricing rule with a customer condition). Commerce prices a variant for the signed-in user unless told otherwise, and Craft's web queue runner (`runQueueAutomatically`) runs jobs inside a visitor's request, with that visitor's identity: a price list published while a customer with their own price browsed listed that price as `maloprodajna_cijena`, with `posebni_oblik_prodaje` `DA`. Variants are now loaded with `forCustomer(false)`; a Variant passed to `getVariantLowestBefore()` is re-priced for a guest when someone is signed in. The CP price history shows the guest's current price too.
+
 ## 1.3.2 - 2026-10-21
 
 ### Fixed
