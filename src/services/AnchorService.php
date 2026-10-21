@@ -424,7 +424,27 @@ class AnchorService extends Component
         }
 
         /** @var Variant|null */
-        return Variant::find()->id($variant)->status(null)->one();
+        return Variant::find()->id($variant)->status(null)->forCustomer(false)->one();
+    }
+
+    /**
+     * The variant priced for a guest. Commerce prices a variant for the
+     * signed-in user unless told otherwise, and a customer's catalog price is
+     * not a published reduction; a given Variant is reloaded only when its
+     * price can be someone's.
+     */
+    private function guestVariant(int|Variant $variant): ?Variant
+    {
+        if (!$variant instanceof Variant) {
+            return $this->variant($variant);
+        }
+        if (Craft::$app->getUser()->getIdentity() === null || !Commerce::getInstance()->getCatalogPricingRules()->hasCatalogPricingRules()) {
+            return $variant;
+        }
+
+        /** @var Variant|null $guest */
+        $guest = Variant::find()->id($variant->id)->siteId($variant->siteId)->status(null)->forCustomer(false)->one();
+        return $guest ?? $variant;
     }
 
     /**
@@ -448,7 +468,7 @@ class AnchorService extends Component
             return $now;
         }
 
-        $element = $this->variant($variant);
+        $element = $this->guestVariant($variant);
         $salePrice = $element?->getSalePrice();
         $promotionStart = null;
         if ($element !== null && $salePrice !== null && $salePrice < $rows[0]['price']) {
@@ -471,6 +491,7 @@ class AnchorService extends Component
         $rows = (new Query())
             ->select(['price', 'dateFrom'])
             ->from(CommerceTable::CATALOG_PRICING)
+            // Commerce 5 never writes userId: the rule's user list is what makes a price a customer's.
             ->where(['purchasableId' => $variant->id, 'storeId' => $variant->getStoreId(), 'userId' => null])
             ->andWhere(['or', ['catalogPricingRuleId' => null], ['not in', 'catalogPricingRuleId', (new Query())
                 ->select(['catalogPricingRuleId'])

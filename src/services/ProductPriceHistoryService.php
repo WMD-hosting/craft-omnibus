@@ -176,6 +176,7 @@ class ProductPriceHistoryService extends Component
         if (!empty($allVariantIds)) {
             $loadedVariants = Variant::find()
                 ->id($allVariantIds)
+                ->forCustomer(false)
                 ->all();
 
             foreach ($loadedVariants as $variant) {
@@ -380,6 +381,7 @@ class ProductPriceHistoryService extends Component
             if (!empty($allVariantIds)) {
                 $loadedVariants = Variant::find()
                     ->id($allVariantIds)
+                    ->forCustomer(false)
                     ->all();
 
                 foreach ($loadedVariants as $variant) {
