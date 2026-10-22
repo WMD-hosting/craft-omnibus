@@ -251,11 +251,16 @@ class AnchorService extends Component
      * installs the plugin after the reference day asserts "these prices were
      * already in force on that day".
      *
+     * Prices come from the primary store unless `$storeId` names another: the history
+     * is one table without a store column, so a second store's price (a trade store
+     * at 0.00) must not be the variant's first row.
+     *
      * @return int rows written
      */
     public function backfillMissing(?DateTime $asOf = null, ?int $storeId = null): int
     {
         $written = 0;
+        $storeId ??= Commerce::getInstance()->getStores()->getPrimaryStore()->id;
         $recorded = (new Query())
             ->from(ProductPriceHistoryRecord::tableName())
             ->select(['variantId'])

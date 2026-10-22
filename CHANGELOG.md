@@ -1,5 +1,10 @@
 # Release Notes for Omnibus, Price History and Anchor Price
 
+## 1.3.4 - 2026-10-22
+
+### Fixed
+- On a Commerce install with a second store, the price history took any store's save: it has no store column, and the lowest price in the last 30 days reads all of it. Saving a product on the retail site propagated it to a trade store whose variants sit at 0.00, and that wrote one 0.00 row per variant; a save from the trade store wrote its own price. History is now written only for variant saves in the primary store, never for propagating saves (before and after save), and the old price a save is compared with is the variant's price in its own store instead of the lowest-numbered one. `omnibus/anchor/backfill` takes the primary store's price unless `--store` names another. Rows already written for a second store are not removed: look for variants whose history has a row at the other store's price (usually 0.00) and delete those rows.
+
 ## 1.3.3 - 2026-10-21
 
 ### Fixed
