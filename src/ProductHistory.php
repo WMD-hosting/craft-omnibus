@@ -19,6 +19,7 @@ use wmd\craftproductpricehistory\services\ProductPriceHistoryService;
 use wmd\craftproductpricehistory\utilities\ProductPriceUtility;
 use wmd\craftproductpricehistory\variables\ProductPriceHistoryVariable;
 use yii\base\Event;
+use yii\base\InvalidConfigException;
 
 /**
  * @property-read ProductPriceHistoryService $productPriceHistoryService
@@ -135,6 +136,13 @@ class ProductHistory extends Plugin
                     return;
                 }
 
+                // The history has no store column and the lowest price reads all of it, so only
+                // the primary store writes to it. A propagating save repeats a save that already
+                // recorded its price (or that belongs to another store).
+                if ($variant->propagating || !$this->isPrimaryStoreVariant($variant)) {
+                    return;
+                }
+
                 // productId is the owner the variant was loaded through, which is the draft when
                 // a product draft re-saves its canonical variants. Rows keyed to the draft cascade
                 // away when the draft is applied or deleted, so key them to the primary owner.
@@ -153,8 +161,7 @@ class ProductHistory extends Plugin
                 $oldPrice = (new Query())
                     ->from('{{%commerce_purchasables_stores}}')
                     ->select(['basePrice'])
-                    ->where(['purchasableId' => $variant->id])
-                    ->orderBy(['storeId' => SORT_ASC]) // pick the first store arbitrarily if multiple exist
+                    ->where(['purchasableId' => $variant->id, 'storeId' => $variant->getStore()->id])
                     ->scalar();
 
                 // scalar() returns false when there is no store row; false would be stored as 0.00
@@ -197,8 +204,9 @@ class ProductHistory extends Plugin
                 // so a product created with its variants in one save (any importer) has no variant
                 // ids there yet. Craft forces firstSave to false for drafts and revisions; an
                 // applied variant draft gets it back. propagating is the same save repeated for
-                // the variant's other sites.
-                if (!$variant->firstSave || $variant->propagating || $variant->getIsDraft() || $variant->getIsRevision()) {
+                // the variant's other sites, and only the primary store writes history.
+                if (!$variant->firstSave || $variant->propagating || $variant->getIsDraft() || $variant->getIsRevision()
+                    || !$this->isPrimaryStoreVariant($variant)) {
                     return;
                 }
 
@@ -213,6 +221,19 @@ class ProductHistory extends Plugin
                     ->addProductHistoryPrice($productId, $variant->id, $variant->basePrice);
             }
         );
+    }
+
+    /**
+     * Whether the variant is saved in the primary Commerce store. Another store's price
+     * (a trade store at 0.00, a wholesale price) is not the price the shop sells at.
+     */
+    private function isPrimaryStoreVariant(Variant $variant): bool
+    {
+        try {
+            return $variant->getStore()->primary;
+        } catch (InvalidConfigException) {
+            return false;
+        }
     }
 
     private function attachEventHandlers(): void
