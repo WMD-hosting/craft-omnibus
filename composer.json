@@ -27,6 +27,7 @@
     "require-dev": {
         "craftcms/ecs": "dev-main",
         "craftcms/phpstan": "dev-main",
+        "phpoffice/phpspreadsheet": "^1.29|^2.0|^3.0|^4.0|^5.0",
         "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^11.5"
     },
@@ -64,5 +65,8 @@
             "yiisoft/yii2-composer": true,
             "craftcms/plugin-installer": true
         }
+    },
+    "suggest": {
+        "phpoffice/phpspreadsheet": "Reads Excel and OpenDocument price-list files (priceListSource = file); CSV works without it."
     }
 }

@@ -23,6 +23,7 @@ use wmd\craftproductpricehistory\events\RegisterPriceListOutletsEvent;
 use wmd\craftproductpricehistory\helpers\PriceListFiles;
 use wmd\craftproductpricehistory\helpers\SaleNames;
 use wmd\craftproductpricehistory\models\PriceListOutlet;
+use wmd\craftproductpricehistory\models\Settings;
 use wmd\craftproductpricehistory\ProductHistory;
 
 /**
@@ -153,7 +154,8 @@ class PriceListService extends Component
 
     /**
      * Builds the rows of one outlet (the first outlet when null): one per
-     * enabled, live variant.
+     * enabled, live variant, or one per row of the uploaded file when the
+     * source is a file.
      *
      * @return list<array<string, string>>
      */
@@ -262,6 +264,13 @@ class PriceListService extends Component
     private function baseRows(): array
     {
         $settings = ProductHistory::$plugin->getSettings();
+        if ($settings->priceListSource === Settings::SOURCE_FILE) {
+            // No variant behind a row: handlers of EVENT_DEFINE_ROW get variantId 0.
+            return array_map(
+                static fn(array $row) => ['variantId' => 0, 'stockBound' => false, 'row' => $row],
+                ProductHistory::$plugin->getPriceListSource()->rows(),
+            );
+        }
         $anchor = ProductHistory::$plugin->getAnchor();
         $purchasables = Commerce::getInstance()->getPurchasables();
         $catalogPrices = $this->catalogPrices();

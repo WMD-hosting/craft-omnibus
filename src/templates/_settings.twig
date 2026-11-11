@@ -79,6 +79,19 @@
     on: settings.priceListEnabled,
 }) }}
 
+{{ forms.selectField({
+    label: 'Price list source'|t('omnibus'),
+    instructions: 'Commerce reads the variants. A file is a spreadsheet the shop uploads under Utilities → Price list file, for a shop whose prices are not in Commerce; the last upload is published every day.'|t('omnibus'),
+    id: 'priceListSource',
+    name: 'priceListSource',
+    value: settings.priceListSource,
+    options: [
+        {label: 'Commerce products'|t('omnibus'), value: 'commerce'},
+        {label: 'Uploaded file'|t('omnibus'), value: 'file'},
+    ],
+    errors: settings.getErrors('priceListSource'),
+}) }}
+
 {{ forms.textField({
     label: 'Store type'|t('omnibus'),
     instructions: 'Part of the price-list file name (art. VI), e.g. "internetska trgovina".'|t('omnibus'),

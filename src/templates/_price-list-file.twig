@@ -1,0 +1,86 @@
+{% import '_includes/forms' as forms %}
+
+{% if lastImport %}
+    <div class="readable" style="margin-bottom: 24px;">
+        <h2>{{ 'Last upload'|t('omnibus') }}: {{ lastImport.fileName }}</h2>
+        {% if lastImport.fatal %}
+            <p class="error">{{ lastImport.fatal }}</p>
+            <p>{{ 'The previous file is still in use.'|t('omnibus') }}</p>
+        {% else %}
+            <p class="success">{{ '{count} products read.'|t('omnibus', {count: lastImport.rows}) }}</p>
+            {% if lastImport.published is same as(false) %}
+                <p class="error">{{ 'Publishing failed; the file will be published by the next scheduled run.'|t('omnibus') }}</p>
+            {% elseif lastImport.published is not null %}
+                <p class="success">{{ 'Published now ({count} rows).'|t('omnibus', {count: lastImport.published}) }}</p>
+            {% else %}
+                <p>{{ 'It is published with the next daily run (before 08:00).'|t('omnibus') }}</p>
+            {% endif %}
+        {% endif %}
+        {% if lastImport.errors %}
+            <p class="warning">{{ '{count} rows were left out:'|t('omnibus', {count: lastImport.errorCount}) }}</p>
+            <ul class="bullets">
+                {% for error in lastImport.errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+    <hr>
+{% endif %}
+
+<h2>{{ 'Current price list'|t('omnibus') }}</h2>
+{% if info %}
+    <p>
+        <strong>{{ info.fileName }}</strong>,
+        {{ 'uploaded {date}'|t('omnibus', {date: info.importedAt|datetime('short')}) }}{% if info.userName %} ({{ info.userName }}){% endif %},
+        {{ '{count} products'|t('omnibus', {count: info.rows}) }}.
+        <a href="{{ indexUrl }}" target="_blank" rel="noopener">{{ 'Published price lists'|t('omnibus') }}</a>
+    </p>
+    {% if info.errors|length %}
+        <p class="warning">{{ '{count} rows of this file were left out (see the list after uploading it).'|t('omnibus', {count: info.errors|length}) }}</p>
+    {% endif %}
+    {% if preview %}
+        <div class="tableview" style="overflow-x: auto; margin-bottom: 24px;">
+            <table class="data fullwidth">
+                <thead>
+                    <tr>{% for column in columns %}<th>{{ column }}</th>{% endfor %}</tr>
+                </thead>
+                <tbody>
+                    {% for row in preview %}
+                        <tr>{% for column in columns %}<td>{{ row[column] ?? '' }}</td>{% endfor %}</tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <p class="light">{{ 'First {count} rows.'|t('omnibus', {count: preview|length}) }}</p>
+        </div>
+    {% endif %}
+{% else %}
+    <p>{{ 'No file has been uploaded yet.'|t('omnibus') }}</p>
+{% endif %}
+
+<hr>
+
+<h2>{{ 'Upload a new price list'|t('omnibus') }}</h2>
+<form method="post" accept-charset="UTF-8" enctype="multipart/form-data">
+    {{ csrfInput() }}
+    {{ actionInput('omnibus/price-list-file/upload') }}
+
+    {{ forms.field({
+        label: 'File'|t('omnibus'),
+        instructions: 'Excel (xlsx, xls), OpenDocument (ods) or CSV. The first sheet is read; the first row holds the column titles.'|t('omnibus'),
+    }, '<input type="file" name="priceListFile" accept=".xlsx,.xls,.ods,.csv,.txt" required>') }}
+
+    {% if publishEnabled %}
+        {{ forms.checkboxField({
+            label: 'Publish now as well (otherwise with the next daily run before 08:00)'|t('omnibus'),
+            name: 'publishNow',
+            value: '1',
+        }) }}
+    {% endif %}
+
+    <button type="submit" class="btn submit">{{ 'Upload'|t('omnibus') }}</button>
+</form>
+
+<div class="readable" style="margin-top: 24px;">
+    <h3>{{ 'Columns'|t('omnibus') }}</h3>
+    <p>{{ 'Required: Šifra, Naziv, Maloprodajna cijena (with VAT). Optional: Marka, Jedinica mjere, Neto količina, Cijena za jedinicu mjere, Posebni oblik prodaje (DA/NE), Naziv posebnog oblika prodaje, Sidrena cijena, Barkod, Dostupnost (dostupno/nedostupno).'|t('omnibus') }}</p>
+    <p>{{ 'Missing columns are filled in: special sale NE, available, price per unit from the price and the unit (5 l gives the price per litre). Rows with a single filled cell and no price, such as category titles, are skipped.'|t('omnibus') }}</p>
+</div>

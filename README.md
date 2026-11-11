@@ -182,6 +182,28 @@ that day. The
 decision does not prescribe column names or an XSD; adjust if the Ministry
 publishes a technical specification.
 
+### Prices from a spreadsheet
+
+A shop whose prices are not in Commerce (a catalogue without prices on the
+web, prices kept in Excel) publishes the price list from a file. Set
+**Price list source** to **Uploaded file** (`'priceListSource' => 'file'` in
+`config/omnibus.php`), then upload the sheet under **Utilities → Price list
+file** (users need the utility's permission) or from the console:
+
+```sh
+composer require phpoffice/phpspreadsheet   # for xlsx, xls, ods; CSV works without it
+php craft omnibus/price-list/import cjenik.xlsx --dry-run
+php craft omnibus/price-list/import cjenik.xlsx
+```
+
+Every `publish` writes the last uploaded file with that day's date. The first
+sheet is read; its header row needs Šifra, Naziv and Maloprodajna cijena and
+may have Marka, Jedinica mjere, Neto količina, Cijena za jedinicu mjere,
+Posebni oblik prodaje, Naziv posebnog oblika prodaje, Sidrena (dodatna)
+cijena, Barkod and Dostupnost. Missing columns are filled (NE, dostupno, price
+per unit from the unit: "5l" is the price per litre). Rows that cannot be used
+are left out and listed after the upload.
+
 ### One file per store
 
 The settings describe one outlet, the web shop. A retailer with physical
