@@ -15,7 +15,9 @@ use wmd\craftproductpricehistory\models\Settings;
 use wmd\craftproductpricehistory\records\ProductPriceHistoryRecord;
 use wmd\craftproductpricehistory\services\AnchorService;
 use wmd\craftproductpricehistory\services\PriceListService;
+use wmd\craftproductpricehistory\services\PriceListSourceService;
 use wmd\craftproductpricehistory\services\ProductPriceHistoryService;
+use wmd\craftproductpricehistory\utilities\PriceListFileUtility;
 use wmd\craftproductpricehistory\utilities\ProductPriceUtility;
 use wmd\craftproductpricehistory\variables\ProductPriceHistoryVariable;
 use yii\base\Event;
@@ -43,6 +45,7 @@ class ProductHistory extends Plugin
                 'productPriceHistoryService' => ['class' => ProductPriceHistoryService::class],
                 'anchor' => ['class' => AnchorService::class],
                 'priceList' => ['class' => PriceListService::class],
+                'priceListSource' => ['class' => PriceListSourceService::class],
             ],
         ];
     }
@@ -55,6 +58,14 @@ class ProductHistory extends Plugin
     public function getPriceList(): PriceListService
     {
         return $this->get('priceList');
+    }
+
+    /**
+     * @since 1.4.0
+     */
+    public function getPriceListSource(): PriceListSourceService
+    {
+        return $this->get('priceListSource');
     }
 
     /**
@@ -98,6 +109,10 @@ class ProductHistory extends Plugin
                 Utilities::EVENT_REGISTER_UTILITIES,
                 function(RegisterComponentTypesEvent $event) {
                     $event->types[] = ProductPriceUtility::class;
+                    // Only where the price list is read from an uploaded file.
+                    if ($this->getSettings()->priceListSource === Settings::SOURCE_FILE) {
+                        $event->types[] = PriceListFileUtility::class;
+                    }
                 }
             );
         });

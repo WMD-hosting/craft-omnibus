@@ -1,5 +1,12 @@
 # Release Notes for Omnibus, Price History and Anchor Price
 
+## 1.4.0 - 2026-11-11
+
+### Added
+- The price list can come from a spreadsheet instead of Commerce, for a shop whose prices are not in Commerce products (a catalogue with "send an enquiry", prices kept in Excel). Set **Price list source** to **Uploaded file** (`priceListSource` = `file`); the shop uploads its sheet under **Utilities → Price list file** (permission `utility:omnibus-price-list-file`) or with `craft omnibus/price-list/import <file> [--dry-run]`, and every `publish` writes the last upload with that day's date until a new one replaces it.
+- The sheet's header row is found by its titles (Šifra, Naziv, Maloprodajna cijena, Dodatna/sidrena cijena, Jedinica mjere…, or the price-list column names), with or without diacritics and bracketed notes, in the first 20 rows. Code, name and price are required. Missing columns are filled: `posebni_oblik_prodaje` NE, `dostupnost` dostupno, and the price per unit from the price and the unit: "5l" or "400 ml" gives `neto_kolicina` and the price per litre, "kom." or "kpl" the price itself. Prices are rounded to cents. A row with one filled cell and no price (a category title) is skipped; rows without a code, name or price, with a value that is not a price, or repeating a code are left out and listed after the upload.
+- Excel (xlsx, xls) and OpenDocument need `phpoffice/phpspreadsheet` (suggested, not required); CSV is read without it, in UTF-8 or Windows-1250, delimited by `;`, tab or `,`.
+
 ## 1.3.4 - 2026-10-22
 
 ### Fixed

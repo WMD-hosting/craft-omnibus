@@ -74,8 +74,22 @@ class Settings extends Model
     // Price list ("cjenik", NN 101/2026 čl. III–VII)
     // =========================================================================
 
+    /** Prices come from the Commerce variants. */
+    public const SOURCE_COMMERCE = 'commerce';
+
+    /** Prices come from a spreadsheet the shop uploads (Utilities → Price list file). */
+    public const SOURCE_FILE = 'file';
+
     /** @var bool Generate the daily price-list files. */
     public bool $priceListEnabled = true;
+
+    /**
+     * @var string Where the price-list rows come from: `commerce` (the
+     * variants) or `file` (the last uploaded spreadsheet, for a shop whose
+     * prices are not in Commerce).
+     * @since 1.4.0
+     */
+    public string $priceListSource = self::SOURCE_COMMERCE;
 
     /** @var string Oblik prodajnog objekta, part of the file name (čl. VI). */
     public string $storeType = 'internetska-trgovina';
@@ -137,6 +151,7 @@ class Settings extends Model
             [['anchorDate'], 'date', 'format' => 'php:Y-m-d'],
             [['lowestPriceDays', 'retentionDays'], 'integer', 'min' => 1],
             [['csvDelimiter'], 'string', 'length' => 1],
+            [['priceListSource'], 'in', 'range' => [self::SOURCE_COMMERCE, self::SOURCE_FILE]],
             [['storeAddress', 'brandField', 'barcodeField', 'unitField', 'unitPriceField', 'netQuantityField', 'anchorOverrideField', 'saleName'], 'string'],
             [['anchorDateRules'], 'validateAnchorDateRules'],
         ];
