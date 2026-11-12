@@ -1,5 +1,10 @@
 # Release Notes for Omnibus, Price History and Anchor Price
 
+## 1.4.1 - 2026-11-12
+
+### Added
+- **CSV decimal separator** (`csvDecimalSeparator`, `.` or `,`; default `.`, unchanged). A Croatian Excel opens the `;` delimited price list with `28.05`, `12.19` or `7.64` as dates; with `,` the price columns (`cijena_za_jedinicu_mjere`, `maloprodajna_cijena`, `sidrena_cijena`) stay numbers. The XML keeps `.`.
+
 ## 1.4.0 - 2026-11-11
 
 ### Added

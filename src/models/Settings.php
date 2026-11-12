@@ -112,6 +112,14 @@ class Settings extends Model
     /** @var string CSV delimiter. */
     public string $csvDelimiter = ';';
 
+    /**
+     * @var string Decimal separator of the prices in the CSV file: `.` or `,`.
+     * A Croatian Excel opens a `;` file with `28.05` as 28 May; `,` keeps it a
+     * number. The decision prescribes neither; the XML always uses `.`.
+     * @since 1.4.1
+     */
+    public string $csvDecimalSeparator = '.';
+
     /** @var string Field handle on the product holding the brand (čl. III "marka"). Category/Entries or text. */
     public string $brandField = 'productsBrandCategories';
 
@@ -151,6 +159,7 @@ class Settings extends Model
             [['anchorDate'], 'date', 'format' => 'php:Y-m-d'],
             [['lowestPriceDays', 'retentionDays'], 'integer', 'min' => 1],
             [['csvDelimiter'], 'string', 'length' => 1],
+            [['csvDecimalSeparator'], 'in', 'range' => ['.', ',']],
             [['priceListSource'], 'in', 'range' => [self::SOURCE_COMMERCE, self::SOURCE_FILE]],
             [['storeAddress', 'brandField', 'barcodeField', 'unitField', 'unitPriceField', 'netQuantityField', 'anchorOverrideField', 'saleName'], 'string'],
             [['anchorDateRules'], 'validateAnchorDateRules'],
