@@ -141,6 +141,14 @@
     id: 'csvDelimiter', name: 'csvDelimiter', size: 2, value: settings.csvDelimiter, errors: settings.getErrors('csvDelimiter'),
 }) }}
 
+{{ forms.selectField({
+    label: 'CSV decimal separator'|t('omnibus'),
+    instructions: 'A Croatian Excel reads 28.05 in a ; delimited file as a date; a comma keeps prices numbers. The XML always uses a point.'|t('omnibus'),
+    id: 'csvDecimalSeparator', name: 'csvDecimalSeparator',
+    options: [{ label: 'Point (28.05)'|t('omnibus'), value: '.' }, { label: 'Comma (28,05)'|t('omnibus'), value: ',' }],
+    value: settings.csvDecimalSeparator, errors: settings.getErrors('csvDecimalSeparator'),
+}) }}
+
 <h3>{{ 'Field mapping'|t('omnibus') }}</h3>
 <p class="light">{{ 'Handles of the fields that feed the optional columns. Leave empty to publish the column blank.'|t('omnibus') }}</p>
 

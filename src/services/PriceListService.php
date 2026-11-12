@@ -210,7 +210,7 @@ class PriceListService extends Component
                 $name = PriceListFiles::base($outlet->prefix(), $stamp, glob("$dir/*.csv") ?: []);
                 $csvPath = "$dir/$name.csv";
                 $xmlPath = "$dir/$name.xml";
-                FileHelper::writeToFile($csvPath, $this->csv($rows, $settings->csvDelimiter));
+                FileHelper::writeToFile($csvPath, $this->csv($rows, $settings->csvDelimiter, $settings->csvDecimalSeparator));
                 FileHelper::writeToFile($xmlPath, $this->xml($rows, $stamp, $outlet));
                 $written[] = ['code' => $outlet->code, 'name' => $outlet->displayName(), 'csv' => $csvPath, 'xml' => $xmlPath, 'rows' => count($rows)];
             }
@@ -436,14 +436,25 @@ class PriceListService extends Component
     // Formats
     // =========================================================================
 
-    public function csv(array $rows, string $delimiter = ';'): string
+    /** Price columns; the CSV may write their decimal point as a comma. */
+    private const MONEY_COLUMNS = ['cijena_za_jedinicu_mjere', 'maloprodajna_cijena', 'sidrena_cijena'];
+
+    public function csv(array $rows, string $delimiter = ';', string $decimalSeparator = '.'): string
     {
         $out = fopen('php://temp', 'r+');
         // UTF-8 BOM so spreadsheet software reads diacritics correctly.
         fwrite($out, "\xEF\xBB\xBF");
         fputcsv($out, self::COLUMNS, $delimiter, '"', '');
         foreach ($rows as $row) {
-            fputcsv($out, array_map(static fn($c) => $row[$c] ?? '', self::COLUMNS), $delimiter, '"', '');
+            $cells = [];
+            foreach (self::COLUMNS as $column) {
+                $cell = (string)($row[$column] ?? '');
+                if ($decimalSeparator !== '.' && in_array($column, self::MONEY_COLUMNS, true)) {
+                    $cell = str_replace('.', $decimalSeparator, $cell);
+                }
+                $cells[] = $cell;
+            }
+            fputcsv($out, $cells, $delimiter, '"', '');
         }
         rewind($out);
         $csv = stream_get_contents($out);

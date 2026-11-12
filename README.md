@@ -92,6 +92,7 @@ product and type that price there; a filled override is the anchor.
 | Index route | `cjenik` | public page listing the files |
 | Retention | 30 days | čl. VII |
 | CSV delimiter | `;` | |
+| CSV decimal separator | `.` | `,` for shops whose customers open the CSV in a Croatian Excel (`28.05` reads as a date); XML always `.` |
 | Name of a reduction without a pricing rule | empty ("Sniženje") | `naziv_posebnog_oblika_prodaje` for a promotional price typed on the variant |
 | Field mapping | brand: `productsBrandCategories` | handles for marka, neto količina, barkod, jedinica mjere, cijena za jedinicu mjere |
 
