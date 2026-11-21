@@ -1,7 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  <rect x="6" y="6" width="88" height="88" rx="18" fill="#1F2937"/>
-  <path d="M22 70 L38 52 L52 60 L78 30" stroke="#F59E0B" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="78" cy="30" r="6" fill="#F59E0B"/>
-  <path d="M22 78 H78" stroke="#9CA3AF" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 8"/>
-  <path d="M50 26 v10 M45 31 h10" stroke="#E5E7EB" stroke-width="4" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="omnibus-t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#056a9c"/><stop offset=".55" stop-color="#0679ad"/><stop offset="1" stop-color="#12a0d4"/></linearGradient>
+    <clipPath id="omnibus-c"><rect x="6" y="6" width="88" height="88" rx="18"/></clipPath>
+  </defs>
+  <rect x="6" y="6" width="88" height="88" rx="18" fill="url(#omnibus-t)"/>
+  <!-- two pieces of the wmd.hr tile pattern -->
+  <g clip-path="url(#omnibus-c)">
+    <path d="M94 6V30A24 24 0 0 1 70 6Z" fill="#5ccbee"/>
+    <path d="M6 94V70A24 24 0 0 1 30 94Z" fill="#5ccbee" opacity=".55"/>
+  </g>
+  <path d="M24 70 L39 53 L52 61 L76 33" stroke="#f05a28" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="76" cy="33" r="6.5" fill="#f05a28"/>
+  <path d="M24 78 H76" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 8" opacity=".75"/>
+  <path d="M42 26 v12 M36 32 h12" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/>
 </svg>
